@@ -1,4 +1,5 @@
-﻿// Learn more about F# at http://fsharp.net
+﻿module OAuth
 
-module Module1
+type OAuthParameter = OAuthParameter of string * string
 
+let parameterize key value = OAuthParameter (key, value)

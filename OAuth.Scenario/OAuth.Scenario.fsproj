@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>ded39c77-58cc-4e9e-b47a-92d674ff129f</ProjectGuid>
+    <ProjectGuid>{f5595edc-1fe8-45f1-b84b-1dc2028409e2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>OAuth.Scenario</RootNamespace>
     <AssemblyName>OAuth.Scenario</AssemblyName>
@@ -34,13 +34,24 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
+    <Reference Include="NaturalSpec">
+      <HintPath>..\..\..\..\usr\lib\naturalspec\NaturalSpec.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.5.10.11092, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Module1.fs" />
+    <Compile Include="OAuthScenario.fs" />
     <None Include="Script.fsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OAuth\OAuth.fsproj">
+      <Name>OAuth</Name>
+      <Project>{25acf5d7-17e9-4ab9-acb0-97a33cfccf39}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
