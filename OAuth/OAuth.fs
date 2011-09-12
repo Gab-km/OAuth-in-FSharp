@@ -9,3 +9,8 @@ let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key val
 let keyValue oParam =
     match oParam with
     | OAuthParameter (key, value) -> key + "=" + value
+
+let keyValueMany oParams =
+    oParams
+    |> List.map keyValue
+    |> List.fold (fun s t -> if s = "" then t else s + "&" + t) ""

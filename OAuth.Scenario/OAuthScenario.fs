@@ -27,3 +27,12 @@ let ``複数のOAuthパラメータを一度に作る`` () =
                         OAuthParameter ("oauth_nonce", "1111");
                         OAuthParameter ("oauth_signature", "YYYY")]
     |> Verify
+
+[<Scenario>]
+let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して連結する`` () =
+    Given [OAuthParameter ("oauth_consumer_key", "XXXX");
+            OAuthParameter ("oauth_nonce", "1111");
+            OAuthParameter ("oauth_signature", "YYYY")]
+    |> When OAuth.keyValueMany
+    |> It should equal "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
+    |> Verify
