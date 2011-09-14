@@ -1,0 +1,5 @@
+* oauth_nonceを生成する関数
+* oauth_timestampを作成する関数
+* Consumer Secretを元にoauth_signature_methodに従い、oauth_signatureを生成する
+* 与えられたクエリパラメータをキーの昇順でソートする関数
+* 与えられた文字列をURLエンコードする関数
