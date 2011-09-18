@@ -36,3 +36,10 @@ let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して�
     |> When OAuth.keyValueMany
     |> It should equal "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
     |> Verify
+
+[<Scenario>]
+let ``generateNonceしてみる`` () =
+    Given ()
+    |> generateNonce
+    |> It shouldn't equal ""
+    |> Verify

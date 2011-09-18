@@ -1,5 +1,7 @@
 ﻿module OAuth
 
+open System
+
 type OAuthParameter = OAuthParameter of string * string
 
 let parameterize key value = OAuthParameter (key, value)
@@ -14,3 +16,6 @@ let keyValueMany oParams =
     oParams
     |> List.map keyValue
     |> List.fold (fun s t -> if s = "" then t else s + "&" + t) ""
+
+let generateNonce () =
+    DateTime.Now.Ticks.ToString ()
