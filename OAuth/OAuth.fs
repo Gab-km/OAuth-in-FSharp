@@ -19,3 +19,9 @@ let keyValueMany oParams =
 
 let generateNonce () =
     DateTime.Now.Ticks.ToString ()
+
+let generateTimeStamp () =
+    DateTime.UtcNow - DateTime (1970, 1, 1, 0, 0, 0, 0)
+    |> fun ts -> ts.TotalSeconds
+    |> Convert.ToInt64
+    |> fun l -> l.ToString ()

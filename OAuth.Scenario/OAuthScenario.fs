@@ -40,6 +40,14 @@ let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して�
 [<Scenario>]
 let ``generateNonceしてみる`` () =
     Given ()
-    |> generateNonce
+    |> When generateNonce
     |> It shouldn't equal ""
+    |> Verify
+
+[<Scenario>]
+let ``generateTimeStampしてみる`` () =
+    Given ()
+    |> When generateTimeStamp
+    |> calculating (fun s -> s.Length)
+    |> It should equal 10
     |> Verify
