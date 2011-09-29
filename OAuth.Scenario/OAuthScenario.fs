@@ -51,3 +51,15 @@ let ``generateTimeStampしてみる`` () =
     |> calculating (fun s -> s.Length)
     |> It should equal 10
     |> Verify
+
+[<Scenario>]
+let ``HMAC-SHA1でgenerateSignatureする`` () =
+    Given { consumer_secret="hoge"; token_secret=None }
+    |> When generateSignature
+    |> calculating
+        (fun algorithm ->
+            algorithm.ComputeHash ("fuga" |> System.Text.Encoding.ASCII.GetBytes))
+    |> It should equal [|136uy; 75uy; 97uy; 135uy; 131uy; 61uy; 101uy; 118uy;
+                        81uy; 123uy; 160uy; 218uy; 141uy; 214uy; 169uy; 168uy;
+                        176uy; 195uy; 4uy; 85uy|]
+    |> Verify
