@@ -5,7 +5,7 @@ open System.Text
 
 type OAuthParameter = OAuthParameter of string * string
 
-type HashAlgorithm = HMACSHA1 | PLAINTEXT
+type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
 type SignatureParameter = { consumer_secret : string; token_secret : string option }
 
 let parameterize key value = OAuthParameter (key, value)
@@ -30,6 +30,14 @@ let generateTimeStamp () =
     |> Convert.ToInt64
     |> fun l -> l.ToString ()
 
+let generateAlgorithmParameter = function
+    | { consumer_secret=cs; token_secret=Some(ts) } ->
+        cs + "&" + ts
+        |> Encoding.ASCII.GetBytes
+    | { consumer_secret=cs; token_secret=_ } ->
+        cs + "&"
+        |> Encoding.ASCII.GetBytes
+
 let generateSignature algorithmType sigParam (baseString : string) =
     let genAlgorithmParam = function
         | { consumer_secret=cs; token_secret=Some(ts) } ->
@@ -42,10 +50,11 @@ let generateSignature algorithmType sigParam (baseString : string) =
     | HMACSHA1 ->
         use algorithm = new System.Security.Cryptography.HMACSHA1 (sigParam |> genAlgorithmParam)
         baseString
+        |> System.Web.HttpUtility.HtmlEncode
         |> Encoding.ASCII.GetBytes
         |> algorithm.ComputeHash
         |> Convert.ToBase64String
     | PLAINTEXT ->
         baseString
         |> System.Web.HttpUtility.HtmlEncode
-        
+    | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))

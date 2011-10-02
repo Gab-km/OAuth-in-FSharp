@@ -69,3 +69,12 @@ let ``PLAINTEXTでgenerateSignatureする`` () =
         (fun genSig -> genSig "fuga")
     |> It should equal "fuga"
     |> Verify
+
+[<Scenario>]
+[<FailsWithType (typeof<System.NotImplementedException>)>]
+let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedExceptionが送出される`` () =
+    Given { consumer_secret="hoge"; token_secret=None }
+    |> When generateSignature RSASHA1
+    |> calculating
+        (fun genSig -> genSig "fuga")
+    |> Verify
