@@ -30,7 +30,7 @@ let generateTimeStamp () =
     |> Convert.ToInt64
     |> fun l -> l.ToString ()
 
-let generateSignature sigParam =
+let generateSignature sigParam (baseString : string) =
     let genAlgorithmParam = function
         | { consumer_secret=cs; token_secret=Some(ts) } ->
             cs + "&" + ts
@@ -38,4 +38,8 @@ let generateSignature sigParam =
         | { consumer_secret=cs; token_secret=_ } ->
             cs + "&"
             |> Encoding.ASCII.GetBytes
-    new HMACSHA1 (sigParam |> genAlgorithmParam)
+    use algorithm = new HMACSHA1 (sigParam |> genAlgorithmParam)
+    baseString
+    |> Encoding.ASCII.GetBytes
+    |> algorithm.ComputeHash
+    |> Convert.ToBase64String
