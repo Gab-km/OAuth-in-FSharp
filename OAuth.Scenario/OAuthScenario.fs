@@ -55,8 +55,17 @@ let ``generateTimeStampしてみる`` () =
 [<Scenario>]
 let ``HMAC-SHA1でgenerateSignatureする`` () =
     Given { consumer_secret="hoge"; token_secret=None }
-    |> When generateSignature
+    |> When generateSignature HMACSHA1
     |> calculating
         (fun genSig -> genSig "fuga")
     |> It should equal "iEthh4M9ZXZRe6DajdapqLDDBFU="
+    |> Verify
+
+[<Scenario>]
+let ``PLAINTEXTでgenerateSignatureする`` () =
+    Given { consumer_secret="hoge"; token_secret=None }
+    |> When generateSignature PLAINTEXT
+    |> calculating
+        (fun genSig -> genSig "fuga")
+    |> It should equal "fuga"
     |> Verify

@@ -1,3 +1,7 @@
+The OAuth 1.0 Protocol http://tools.ietf.org/html/rfc5849
 * Consumer Secretを元にoauth_signature_methodに従い、oauth_signatureを生成する
+** HMAC-SHA1の場合...実装完了
+** RSA-SHA1の場合...
+** PLAINTEXTの場合...
 * 与えられたクエリパラメータをキーの昇順でソートする関数
 * 与えられた文字列をURLエンコードする関数

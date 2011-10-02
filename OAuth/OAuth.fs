@@ -2,10 +2,10 @@
 
 open System
 open System.Text
-open System.Security.Cryptography
 
 type OAuthParameter = OAuthParameter of string * string
 
+type HashAlgorithm = HMACSHA1 | PLAINTEXT
 type SignatureParameter = { consumer_secret : string; token_secret : string option }
 
 let parameterize key value = OAuthParameter (key, value)
@@ -30,7 +30,7 @@ let generateTimeStamp () =
     |> Convert.ToInt64
     |> fun l -> l.ToString ()
 
-let generateSignature sigParam (baseString : string) =
+let generateSignature algorithmType sigParam (baseString : string) =
     let genAlgorithmParam = function
         | { consumer_secret=cs; token_secret=Some(ts) } ->
             cs + "&" + ts
@@ -38,8 +38,14 @@ let generateSignature sigParam (baseString : string) =
         | { consumer_secret=cs; token_secret=_ } ->
             cs + "&"
             |> Encoding.ASCII.GetBytes
-    use algorithm = new HMACSHA1 (sigParam |> genAlgorithmParam)
-    baseString
-    |> Encoding.ASCII.GetBytes
-    |> algorithm.ComputeHash
-    |> Convert.ToBase64String
+    match algorithmType with
+    | HMACSHA1 ->
+        use algorithm = new System.Security.Cryptography.HMACSHA1 (sigParam |> genAlgorithmParam)
+        baseString
+        |> Encoding.ASCII.GetBytes
+        |> algorithm.ComputeHash
+        |> Convert.ToBase64String
+    | PLAINTEXT ->
+        baseString
+        |> System.Web.HttpUtility.HtmlEncode
+        
