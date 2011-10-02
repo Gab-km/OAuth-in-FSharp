@@ -30,14 +30,6 @@ let generateTimeStamp () =
     |> Convert.ToInt64
     |> fun l -> l.ToString ()
 
-let generateAlgorithmParameter = function
-    | { consumer_secret=cs; token_secret=Some(ts) } ->
-        cs + "&" + ts
-        |> Encoding.ASCII.GetBytes
-    | { consumer_secret=cs; token_secret=_ } ->
-        cs + "&"
-        |> Encoding.ASCII.GetBytes
-
 let generateSignature algorithmType sigParam (baseString : string) =
     let genAlgorithmParam = function
         | { consumer_secret=cs; token_secret=Some(ts) } ->
@@ -58,3 +50,5 @@ let generateSignature algorithmType sigParam (baseString : string) =
         baseString
         |> System.Web.HttpUtility.HtmlEncode
     | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
+
+let generateSignatureWithHMACSHA1 = generateSignature HMACSHA1
