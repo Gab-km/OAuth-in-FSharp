@@ -64,7 +64,7 @@ let ``HMAC-SHA1でgenerateSignatureする`` () =
 [<Scenario>]
 let ``PLAINTEXTでgenerateSignatureする`` () =
     Given { consumer_secret="hoge"; token_secret=None }
-    |> When generateSignature PLAINTEXT
+    |> When generateSignatureWithPLAINTEXT
     |> calculating
         (fun genSig -> genSig "fuga")
     |> It should equal "fuga"
@@ -74,7 +74,7 @@ let ``PLAINTEXTでgenerateSignatureする`` () =
 [<FailsWithType (typeof<System.NotImplementedException>)>]
 let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedExceptionが送出される`` () =
     Given { consumer_secret="hoge"; token_secret=None }
-    |> When generateSignature RSASHA1
+    |> When generateSignatureWithRSASHA1
     |> calculating
         (fun genSig -> genSig "fuga")
     |> Verify

@@ -52,3 +52,5 @@ let generateSignature algorithmType sigParam (baseString : string) =
     | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
 
 let generateSignatureWithHMACSHA1 = generateSignature HMACSHA1
+let generateSignatureWithPLAINTEXT = generateSignature PLAINTEXT
+let generateSignatureWithRSASHA1 = generateSignature RSASHA1
