@@ -8,6 +8,8 @@ type OAuthParameter = OAuthParameter of string * string
 type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
 type SignatureParameter = { consumer_secret : string; token_secret : string option }
 
+type HttpMethod = GET | HEAD | POST | PUT | DELETE | OPTIONS | TRACE | CONNECT | PATCH
+
 let parameterize key value = OAuthParameter (key, value)
 
 let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
@@ -52,3 +54,25 @@ let generateSignature algorithmType sigParam (baseString : string) =
 let generateSignatureWithHMACSHA1 = generateSignature HMACSHA1
 let generateSignatureWithPLAINTEXT = generateSignature PLAINTEXT
 let generateSignatureWithRSASHA1 = generateSignature RSASHA1
+
+let assembleBaseString httpMethod targetUrl oauthParameter =
+    let meth =
+        match httpMethod with
+        | GET -> "GET"
+        | HEAD -> "HEAD"
+        | POST -> "POST"
+        | PUT -> "PUT"
+        | DELETE -> "DELETE"
+        | OPTIONS -> "OPTIONS"
+        | TRACE -> "TRACE"
+        | CONNECT -> "CONNECT"
+        | PATCH -> "PATCH"
+    let sanitizedUrl = targetUrl |> System.Web.HttpUtility.HtmlEncode
+    let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
+    let sanitizeAndSetParameters = function
+        | OAuthParameter (key, value) -> key + "=" + (System.Web.HttpUtility.HtmlEncode value)
+    let arrangedParams = oauthParameter
+                        |> sortParameters
+                        |> List.map sanitizeAndSetParameters
+                        |> List.fold (fun s t -> if s = "" then t else s + "&" + t) ""
+    meth + "&" + sanitizedUrl + "&" + arrangedParams

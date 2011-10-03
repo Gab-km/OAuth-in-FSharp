@@ -78,3 +78,17 @@ let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedException�
     |> calculating
         (fun genSig -> genSig "fuga")
     |> Verify
+
+[<Scenario>]
+let ``与えられたクエリパラメータをキーの昇順でソートする`` () =
+    Given [OAuthParameter ("oauth_consumer_key", "XXXX");
+            OAuthParameter ("oauth_signature_method", "HMACSHA1");
+            OAuthParameter ("oauth_timestamp", "1234567890");
+            OAuthParameter ("oauth_nonce", "1111");
+            OAuthParameter ("oauth_signature", "YYYY")]
+    |> When assembleBaseString POST "http://hoge.com"
+    |> It should equal ("POST&http://hoge.com&"
+                        + "oauth_consumer_key=XXXX&oauth_nonce=1111&"
+                        + "oauth_signature=YYYY&oauth_signature_method=HMACSHA1&"
+                        + "oauth_timestamp=1234567890")
+    |> Verify
