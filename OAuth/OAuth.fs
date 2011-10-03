@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open System.Web
 
 type OAuthParameter = OAuthParameter of string * string
 
@@ -48,29 +49,30 @@ let generateSignature algorithmType sigParam (baseString : string) =
         |> Convert.ToBase64String
     | PLAINTEXT ->
         baseString
-        |> System.Web.HttpUtility.HtmlEncode
+        |> HttpUtility.HtmlEncode
     | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
 
 let generateSignatureWithHMACSHA1 = generateSignature HMACSHA1
 let generateSignatureWithPLAINTEXT = generateSignature PLAINTEXT
 let generateSignatureWithRSASHA1 = generateSignature RSASHA1
 
+let getHttpMethodString = function
+    | GET -> "GET"
+    | HEAD -> "HEAD"
+    | POST -> "POST"
+    | PUT -> "PUT"
+    | DELETE -> "DELETE"
+    | OPTIONS -> "OPTIONS"
+    | TRACE -> "TRACE"
+    | CONNECT -> "CONNECT"
+    | PATCH -> "PATCH"
+
 let assembleBaseString httpMethod targetUrl oauthParameter =
-    let meth =
-        match httpMethod with
-        | GET -> "GET"
-        | HEAD -> "HEAD"
-        | POST -> "POST"
-        | PUT -> "PUT"
-        | DELETE -> "DELETE"
-        | OPTIONS -> "OPTIONS"
-        | TRACE -> "TRACE"
-        | CONNECT -> "CONNECT"
-        | PATCH -> "PATCH"
-    let sanitizedUrl = targetUrl |> System.Web.HttpUtility.HtmlEncode
+    let meth =getHttpMethodString httpMethod
+    let sanitizedUrl = targetUrl |> HttpUtility.HtmlEncode
     let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
     let sanitizeAndSetParameters = function
-        | OAuthParameter (key, value) -> key + "=" + (System.Web.HttpUtility.HtmlEncode value)
+        | OAuthParameter (key, value) -> key + "=" + (HttpUtility.HtmlEncode value)
     let arrangedParams = oauthParameter
                         |> sortParameters
                         |> List.map sanitizeAndSetParameters
