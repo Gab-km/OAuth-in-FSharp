@@ -1,4 +1,4 @@
-The OAuth 1.0 Protocol http://tools.ietf.org/html/rfc5849
+参考：The OAuth 1.0 Protocol http://tools.ietf.org/html/rfc5849
 * OAuthパラメータを構築する関数を作る
 * HTTP通信用の便利関数を作る
 * 与えられたパラメータでHTTP通信する関数を作る

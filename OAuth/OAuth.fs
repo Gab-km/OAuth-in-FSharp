@@ -9,7 +9,7 @@ type OAuthParameter = OAuthParameter of string * string
 type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
 type SignatureParameter = { consumer_secret : string; token_secret : string option }
 
-type HttpMethod = GET | HEAD | POST | PUT | DELETE | OPTIONS | TRACE | CONNECT | PATCH
+type HttpMethod = GET | POST
 
 let parameterize key value = OAuthParameter (key, value)
 
@@ -58,14 +58,7 @@ let generateSignatureWithRSASHA1 = generateSignature RSASHA1
 
 let getHttpMethodString = function
     | GET -> "GET"
-    | HEAD -> "HEAD"
     | POST -> "POST"
-    | PUT -> "PUT"
-    | DELETE -> "DELETE"
-    | OPTIONS -> "OPTIONS"
-    | TRACE -> "TRACE"
-    | CONNECT -> "CONNECT"
-    | PATCH -> "PATCH"
 
 let assembleBaseString httpMethod targetUrl oauthParameter =
     let meth =getHttpMethodString httpMethod
