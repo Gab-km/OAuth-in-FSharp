@@ -54,7 +54,7 @@ let ``generateTimeStampしてみる`` () =
 
 [<Scenario>]
 let ``HMAC-SHA1でgenerateSignatureする`` () =
-    Given { consumer_secret="hoge"; token_secret=None }
+    Given { consumer_key="hoge"; token_secret=None }
     |> When generateSignatureWithHMACSHA1
     |> calculating
         (fun genSig -> genSig "fuga")
@@ -63,7 +63,7 @@ let ``HMAC-SHA1でgenerateSignatureする`` () =
 
 [<Scenario>]
 let ``PLAINTEXTでgenerateSignatureする`` () =
-    Given { consumer_secret="hoge"; token_secret=None }
+    Given { consumer_key="hoge"; token_secret=None }
     |> When generateSignatureWithPLAINTEXT
     |> calculating
         (fun genSig -> genSig "fuga")
@@ -73,7 +73,7 @@ let ``PLAINTEXTでgenerateSignatureする`` () =
 [<Scenario>]
 [<FailsWithType (typeof<System.NotImplementedException>)>]
 let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedExceptionが送出される`` () =
-    Given { consumer_secret="hoge"; token_secret=None }
+    Given { consumer_key="hoge"; token_secret=None }
     |> When generateSignatureWithRSASHA1
     |> calculating
         (fun genSig -> genSig "fuga")
@@ -92,3 +92,8 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
                         + "oauth_signature=YYYY&oauth_signature_method=HMACSHA1&"
                         + "oauth_timestamp=1234567890")
     |> Verify
+
+//[<Scenario>]
+//let ``リクエストトークンを要求するHTTPヘッダを構成する`` () =
+//    Given "test_consumer_key"
+//    |> 

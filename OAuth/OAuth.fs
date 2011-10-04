@@ -7,7 +7,7 @@ open System.Web
 type OAuthParameter = OAuthParameter of string * string
 
 type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
-type SignatureParameter = { consumer_secret : string; token_secret : string option }
+type SignatureParameter = { consumer_key : string; token_secret : string option }
 
 type HttpMethod = GET | POST
 
@@ -33,10 +33,10 @@ let generateTimeStamp () =
 
 let generateSignature algorithmType sigParam (baseString : string) =
     let genAlgorithmParam = function
-        | { consumer_secret=cs; token_secret=Some(ts) } ->
+        | { consumer_key=cs; token_secret=Some(ts) } ->
             cs + "&" + ts
             |> Encoding.ASCII.GetBytes
-        | { consumer_secret=cs; token_secret=_ } ->
+        | { consumer_key=cs; token_secret=_ } ->
             cs + "&"
             |> Encoding.ASCII.GetBytes
     match algorithmType with
