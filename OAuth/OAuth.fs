@@ -17,7 +17,7 @@ let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key val
 
 let keyValue oParam =
     match oParam with
-    | OAuthParameter (key, value) -> key + "=" + value
+    | OAuthParameter (key, value) -> key + "=" + (HttpUtility.HtmlEncode value)
 
 let keyValueMany oParams =
     oParams
