@@ -64,10 +64,7 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
     let meth =getHttpMethodString httpMethod
     let sanitizedUrl = targetUrl |> HttpUtility.HtmlEncode
     let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
-    let sanitizeAndSetParameters = function
-        | OAuthParameter (key, value) -> key + "=" + (HttpUtility.HtmlEncode value)
     let arrangedParams = oauthParameter
                         |> sortParameters
-                        |> List.map sanitizeAndSetParameters
-                        |> List.fold (fun s t -> if s = "" then t else s + "&" + t) ""
+                        |> keyValueMany
     meth + "&" + sanitizedUrl + "&" + arrangedParams
