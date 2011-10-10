@@ -107,12 +107,12 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
                         + "oauth_timestamp=1234567890")
     |> Verify
 
-//[<Scenario>]
-//let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
-//    Given "test_consumer_key"
-//    |> When generateAuthorizationHeaderForRequestToken
-//    |> It should equal ("OAuth oauth_consumer_key=test_consumer_key" +
-//                        "&oauth_nonce=1111&oauth_signature=YYYY" +
-//                        "&oauth_signature_method=HMACSHA1" +
-//                        "&oauth_timestamp=1234567890")
-//    |> Verify
+[<Scenario>]
+let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
+    Given "test_consumer_key"
+    |> When generateAuthorizationHeaderForRequestToken
+    |> It should equal ("OAuth oauth_consumer_key=test_consumer_key" +
+                        "&oauth_nonce=1111&oauth_signature=YYYY" +
+                        "&oauth_signature_method=HMACSHA1" +
+                        "&oauth_timestamp=1234567890")
+    |> Verify

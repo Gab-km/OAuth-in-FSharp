@@ -74,7 +74,16 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
                         |> keyValueMany
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
-//let generateAuthorizationHeaderForRequestToken consumerKey =
-//    let signature = parameterize "oauth_consumer_key" consumerKey
-//                    |> assembleBaseString POST "http://hoge.com"
-//                    |> generateSignatureWithHMACSHA1
+let generateAuthorizationHeaderForRequestToken consumerKey =
+    let baseString = parameterizeMany [("oauth_consumer_key", consumerKey)]
+                    |> assembleBaseString POST "http://hoge.com"
+    let signature = makeSignatureParameter consumerKey None
+                    |> generateSignatureWithHMACSHA1 <| baseString
+    let oParams = [("oauth_consumer_key", consumerKey);
+                    ("oauth_nonce", generateNonce ());
+                    ("oauth_signature", signature);
+                    ("oauth_signature_method", "HMACSHA1");
+                    ("oauth_timestamp", generateTimeStamp ())]
+                    |> parameterizeMany
+                    |> keyValueMany
+    "OAuth " + oParams
