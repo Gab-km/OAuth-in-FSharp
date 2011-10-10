@@ -20,9 +20,11 @@ let keyValue oParam =
     | OAuthParameter (key, value) -> key + "=" + (HttpUtility.HtmlEncode value)
 
 let keyValueMany oParams =
-    oParams
-    |> List.map keyValue
-    |> List.fold (fun s t -> if s = "" then t else s + "&" + t) ""
+    let keyValues = oParams |> List.map keyValue
+    match keyValues with
+    | x::y::xs ->  List.fold (fun s t -> if s = "" then t else s + "&" + t) "" keyValues
+    | x::xs -> x + "&"
+    | _ -> ""
 
 let generateNonce () =
     DateTime.Now.Ticks.ToString ()
@@ -68,3 +70,8 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
                         |> sortParameters
                         |> keyValueMany
     meth + "&" + sanitizedUrl + "&" + arrangedParams
+
+//let generateAuthorizationHeaderForRequestToken consumerKey =
+//    let baseString = parameterize "oauth_consumer_key" consumerKey
+//                    |> KeyValue
+//                    |>

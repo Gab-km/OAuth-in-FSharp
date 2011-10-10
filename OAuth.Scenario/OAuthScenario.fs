@@ -38,6 +38,13 @@ let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して�
     |> Verify
 
 [<Scenario>]
+let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆に変換する`` () =
+    Given [OAuthParameter ("oauth_consumer_key", "XXXX")]
+    |> When OAuth.keyValueMany
+    |> It should equal "oauth_consumer_key=XXXX&"
+    |> Verify
+
+[<Scenario>]
 let ``generateNonceしてみる`` () =
     Given ()
     |> When generateNonce
@@ -94,6 +101,11 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
     |> Verify
 
 //[<Scenario>]
-//let ``リクエストトークンを要求するHTTPヘッダを構成する`` () =
+//let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
 //    Given "test_consumer_key"
-//    |> 
+//    |> When generateAuthorizationHeaderForRequestToken
+//    |> It should equal ("OAuth oauth_consumer_key=test_consumer_key" +
+//                        "&oauth_nonce=1111&oauth_signature=YYYY" +
+//                        "&oauth_signature_method=HMACSHA1" +
+//                        "&oauth_timestamp=1234567890")
+//    |> Verify
