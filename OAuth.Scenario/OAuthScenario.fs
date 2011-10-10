@@ -60,6 +60,13 @@ let ``generateTimeStampしてみる`` () =
     |> Verify
 
 [<Scenario>]
+let ``generateSignatureParameterする`` () =
+    Given ("hoge", Some("fuga"))
+    |> When (fun (ck, ts) -> makeSignatureParameter ck ts)
+    |> It should equal { consumer_key="hoge"; token_secret=Some("fuga") }
+    |> Verify
+
+[<Scenario>]
 let ``HMAC-SHA1でgenerateSignatureする`` () =
     Given { consumer_key="hoge"; token_secret=None }
     |> When generateSignatureWithHMACSHA1

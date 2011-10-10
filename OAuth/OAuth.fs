@@ -33,6 +33,9 @@ let generateTimeStamp () =
     ((DateTime.UtcNow - DateTime (1970, 1, 1, 0, 0, 0, 0)).TotalSeconds
      |> Convert.ToInt64).ToString ()
 
+let makeSignatureParameter consumerKey tokenSecret =
+    { consumer_key=consumerKey; token_secret=tokenSecret }
+
 let generateSignature algorithmType sigParam (baseString : string) =
     let genAlgorithmParam = function
         | { consumer_key=cs; token_secret=Some(ts) } ->
@@ -72,6 +75,6 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
 //let generateAuthorizationHeaderForRequestToken consumerKey =
-//    let baseString = parameterize "oauth_consumer_key" consumerKey
-//                    |> KeyValue
-//                    |>
+//    let signature = parameterize "oauth_consumer_key" consumerKey
+//                    |> assembleBaseString POST "http://hoge.com"
+//                    |> generateSignatureWithHMACSHA1
