@@ -1,5 +1,6 @@
 ﻿module OAuthScenario
 
+open System.Text.RegularExpressions
 open NaturalSpec
 open NUnit.Framework
 open OAuth
@@ -48,7 +49,7 @@ let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆
 let ``generateNonceしてみる`` () =
     Given ()
     |> When generateNonce
-    |> It shouldn't equal ""
+    |> It should be (fun nonce -> Regex.IsMatch (nonce, "\d{18}"))
     |> Verify
 
 [<Scenario>]
@@ -111,8 +112,11 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
 let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
     Given "test_consumer_key"
     |> When generateAuthorizationHeaderForRequestToken
-    |> It should equal ("OAuth oauth_consumer_key=test_consumer_key" +
-                        "&oauth_nonce=1111&oauth_signature=YYYY" +
-                        "&oauth_signature_method=HMACSHA1" +
-                        "&oauth_timestamp=1234567890")
+    |> It should be (fun auth ->
+                        (Regex.IsMatch
+                            (auth, "OAuth oauth_consumer_key=test_consumer_key" +
+                                    "&oauth_nonce=\d{18}" +
+                                    "&oauth_signature=[A-Za-z0-9\+\-]+=" +
+                                    "&oauth_signature_method=HMACSHA1" +
+                                    "&oauth_timestamp=\d{10}")))
     |> Verify
