@@ -75,17 +75,20 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
 let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
-    let baseString = parameterizeMany [("oauth_consumer_key", consumerKey)]
-                    |> assembleBaseString POST target
-    let signature = generateSignatureWithHMACSHA1 secretKeys baseString
     let oParams = [("oauth_consumer_key", consumerKey);
                     ("oauth_nonce", generateNonce ());
-                    ("oauth_signature", signature);
                     ("oauth_signature_method", "HMACSHA1");
                     ("oauth_timestamp", generateTimeStamp ())]
+    let baseString = oParams
                     |> parameterizeMany
-                    |> keyValueMany
-    "OAuth " + oParams
+                    |> assembleBaseString POST target
+    let signature = generateSignatureWithHMACSHA1 secretKeys baseString
+    let oParamsWithSignature =
+        ("oauth_signature", signature) :: oParams
+        |> List.sortBy (fun (key, value) -> key)
+        |> parameterizeMany
+        |> keyValueMany
+    "OAuth " + oParamsWithSignature
 
 let getRequestToken target consumerKey secretKeys =
     async {
