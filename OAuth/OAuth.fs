@@ -37,8 +37,8 @@ let generateTimeStamp () =
 let makeSignatureParameter consumerKey tokenSecret =
     { consumer_key=consumerKey; token_secret=tokenSecret }
 
-let rec concatSecretKeys = function
-    | x::y::xs -> x + "&" + y + (concatSecretKeys xs)
+let concatSecretKeys = function
+    | x::y::xs -> List.fold (fun s t -> if s = "" then t else s + "&" + t) "" (x::y::xs)
     | x::xs -> x + "&"
     | _ -> ""
 

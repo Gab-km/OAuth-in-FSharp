@@ -68,7 +68,7 @@ let ``generateSignatureParameterする`` () =
     |> Verify
 
 [<Scenario>]
-let ``concatSecretKeysで複数の秘密鍵を＆で連結する`` () =
+let ``concatSecretKeysで秘密鍵を2つ与えたとき＆で連結する`` () =
     Given ["hoge"; "fuga"]
     |> When concatSecretKeys
     |> It should equal "hoge&fuga"
@@ -79,6 +79,13 @@ let ``concatSecretKeysで秘密鍵を1つ与えたとき＆で終わる`` () =
     Given ["hoge"]
     |> When concatSecretKeys
     |> It should equal "hoge&"
+    |> Verify
+
+[<Scenario>]
+let ``concatSecretKeysで秘密鍵を3つ与えたとき＆で連結する`` () =
+    Given ["hoge"; "fuga"; "bar"]
+    |> When concatSecretKeys
+    |> It should equal "hoge&fuga&bar"
     |> Verify
 
 [<Scenario>]
