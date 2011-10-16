@@ -43,7 +43,7 @@ let concatSecretKeys = function
     | _ -> ""
 
 let generateSignature algorithmType secretKeys (baseString : string) =
-    let keysParam = List.foldBack (fun s t -> s + "&" + t) secretKeys ""
+    let keysParam = concatSecretKeys secretKeys
     match algorithmType with
     | HMACSHA1 ->
         use algorithm = new System.Security.Cryptography.HMACSHA1 (keysParam |> Encoding.ASCII.GetBytes)

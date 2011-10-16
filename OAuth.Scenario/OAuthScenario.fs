@@ -92,7 +92,7 @@ let ``concatSecretKeysで秘密鍵を3つ与えたとき＆で連結する`` () 
 let ``HMAC-SHA1でgenerateSignatureする`` () =
     Given "hoge"
     |> When generateSignatureWithHMACSHA1 ["fuga"]
-    |> It should equal "seQl1EtPp4983V4RMvfYd37MvfE="
+    |> It should equal "jMn6Vt7g5k4F4S666n/LeFwmJWI="
     |> Verify
 
 [<Scenario>]
