@@ -3,6 +3,7 @@
 open System
 open System.Text
 open System.Web
+open OAuth.ExtendedWebClient
 
 type OAuthParameter = OAuthParameter of string * string
 
@@ -87,3 +88,11 @@ let generateAuthorizationHeaderForRequestToken consumerKey =
                     |> parameterizeMany
                     |> keyValueMany
     "OAuth " + oParams
+
+let getRequestToken target consumerKey =
+    async {
+        let wc = new System.Net.WebClient ()
+        wc.Headers.Add ("Authorization", (generateAuthorizationHeaderForRequestToken consumerKey))
+        let! result = wc.AsyncUploadString (new Uri (target)) "POST" ""
+        return result
+    } |> Async.RunSynchronously
