@@ -75,9 +75,9 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
                         |> keyValueMany
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
-let generateAuthorizationHeaderForRequestToken consumerKey =
+let generateAuthorizationHeaderForRequestToken target consumerKey =
     let baseString = parameterizeMany [("oauth_consumer_key", consumerKey)]
-                    |> assembleBaseString POST "http://hoge.com"
+                    |> assembleBaseString POST target
     let signature = makeSignatureParameter consumerKey None
                     |> generateSignatureWithHMACSHA1 <| baseString
     let oParams = [("oauth_consumer_key", consumerKey);
@@ -92,7 +92,7 @@ let generateAuthorizationHeaderForRequestToken consumerKey =
 let getRequestToken target consumerKey =
     async {
         let wc = new System.Net.WebClient ()
-        wc.Headers.Add ("Authorization", (generateAuthorizationHeaderForRequestToken consumerKey))
+        wc.Headers.Add ("Authorization", (generateAuthorizationHeaderForRequestToken target consumerKey))
         let! result = wc.AsyncUploadString (new Uri (target)) "POST" ""
         return result
     } |> Async.RunSynchronously

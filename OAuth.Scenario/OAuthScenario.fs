@@ -111,7 +111,7 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
 [<Scenario>]
 let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
     Given "test_consumer_key"
-    |> When generateAuthorizationHeaderForRequestToken
+    |> When generateAuthorizationHeaderForRequestToken "http://hoge.com"
     |> It should be (fun auth ->
                         (Regex.IsMatch
                             (auth, "OAuth oauth_consumer_key=test_consumer_key" +
