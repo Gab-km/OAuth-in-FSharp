@@ -68,16 +68,23 @@ let ``generateSignatureParameterする`` () =
     |> Verify
 
 [<Scenario>]
+let ``concatSecretKeysで複数の秘密鍵を＆で連結する`` () =
+    Given ["hoge"; "fuga"]
+    |> When concatSecretKeys
+    |> It should equal "hoge&fuga"
+    |> Verify
+
+[<Scenario>]
 let ``HMAC-SHA1でgenerateSignatureする`` () =
     Given "hoge"
-    |> When generateSignatureWithHMACSHA1 "fuga"
+    |> When generateSignatureWithHMACSHA1 ["fuga"]
     |> It should equal "seQl1EtPp4983V4RMvfYd37MvfE="
     |> Verify
 
 [<Scenario>]
 let ``PLAINTEXTでgenerateSignatureする`` () =
     Given "hoge"
-    |> When generateSignatureWithPLAINTEXT "fuga"
+    |> When generateSignatureWithPLAINTEXT ["fuga"]
     |> It should equal "hoge"
     |> Verify
 
@@ -85,7 +92,7 @@ let ``PLAINTEXTでgenerateSignatureする`` () =
 [<FailsWithType (typeof<System.NotImplementedException>)>]
 let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedExceptionが送出される`` () =
     Given "hoge"
-    |> When generateSignatureWithRSASHA1 "fuga"
+    |> When generateSignatureWithRSASHA1 ["fuga"]
     |> Verify
 
 [<Scenario>]
@@ -105,7 +112,7 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
 [<Scenario>]
 let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
     Given "test_consumer_key"
-    |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" <| "fuga"
+    |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" <| ["fuga"]
     |> It should be (fun auth ->
                         (Regex.IsMatch
                             (auth, "OAuth oauth_consumer_key=test_consumer_key" +
