@@ -1,4 +1,4 @@
-﻿module OAuth
+﻿module OAuth.APIs
 
 open System
 open System.Text

@@ -40,6 +40,7 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtendedWebClient.fs" />
     <Compile Include="OAuth.fs" />
     <None Include="Script.fsx" />
   </ItemGroup>

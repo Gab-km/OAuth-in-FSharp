@@ -3,18 +3,18 @@
 open System.Text.RegularExpressions
 open NaturalSpec
 open NUnit.Framework
-open OAuth
+open OAuth.APIs
 
 [<Scenario>]
 let ``OAuthパラメータを作る`` () =
-    Given (OAuth.parameterize "oauth_nonce" "1111")
+    Given (parameterize "oauth_nonce" "1111")
     |> It should equal (OAuthParameter ("oauth_nonce", "1111"))
     |> Verify
 
 [<Scenario>]
 let ``OAuthパラメータをKeyValue形式の文字列に変換する`` () =
-    Given (OAuth.parameterize "oauth_nonce" "1111")
-    |> When OAuth.keyValue
+    Given (parameterize "oauth_nonce" "1111")
+    |> When keyValue
     |> It should equal "oauth_nonce=1111"
     |> Verify
 
@@ -23,7 +23,7 @@ let ``複数のOAuthパラメータを一度に作る`` () =
     Given [("oauth_consumer_key", "XXXX");
             ("oauth_nonce", "1111");
             ("oauth_signature", "YYYY")]
-    |> When OAuth.parameterizeMany
+    |> When parameterizeMany
     |> It should equal [OAuthParameter ("oauth_consumer_key", "XXXX");
                         OAuthParameter ("oauth_nonce", "1111");
                         OAuthParameter ("oauth_signature", "YYYY")]
@@ -34,14 +34,14 @@ let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して�
     Given [OAuthParameter ("oauth_consumer_key", "XXXX");
             OAuthParameter ("oauth_nonce", "1111");
             OAuthParameter ("oauth_signature", "YYYY")]
-    |> When OAuth.keyValueMany
+    |> When keyValueMany
     |> It should equal "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
     |> Verify
 
 [<Scenario>]
 let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆に変換する`` () =
     Given [OAuthParameter ("oauth_consumer_key", "XXXX")]
-    |> When OAuth.keyValueMany
+    |> When keyValueMany
     |> It should equal "oauth_consumer_key=XXXX&"
     |> Verify
 
