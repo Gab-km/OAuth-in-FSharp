@@ -75,6 +75,13 @@ let ``concatSecretKeysで複数の秘密鍵を＆で連結する`` () =
     |> Verify
 
 [<Scenario>]
+let ``concatSecretKeysで秘密鍵を1つ与えたとき＆で終わる`` () =
+    Given ["hoge"]
+    |> When concatSecretKeys
+    |> It should equal "hoge&"
+    |> Verify
+
+[<Scenario>]
 let ``HMAC-SHA1でgenerateSignatureする`` () =
     Given "hoge"
     |> When generateSignatureWithHMACSHA1 ["fuga"]

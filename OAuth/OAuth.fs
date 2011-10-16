@@ -39,7 +39,7 @@ let makeSignatureParameter consumerKey tokenSecret =
 
 let rec concatSecretKeys = function
     | x::y::xs -> x + "&" + y + (concatSecretKeys xs)
-    | x::xs -> ""
+    | x::xs -> x + "&"
     | _ -> ""
 
 let generateSignature algorithmType secretKeys (baseString : string) =
