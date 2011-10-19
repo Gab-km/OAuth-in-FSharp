@@ -16,6 +16,14 @@ let parameterize key value = OAuthParameter (key, value)
 
 let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
 
+let headerKeyValue oParams =
+    match oParams with
+    | x::xs -> oParams
+                |> List.map (fun (OAuthParameter (key, value)) ->
+                                key + "=\"" + value + "\"")
+                |> List.fold (fun s t -> if s = "" then t else s + ", " + t) ""
+    | _ -> ""
+
 let keyValue oParam =
     match oParam with
     | OAuthParameter (key, value) -> key + "=" + (HttpUtility.HtmlEncode value)
@@ -77,23 +85,28 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
 let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
     let oParams = [("oauth_consumer_key", consumerKey);
                     ("oauth_nonce", generateNonce ());
-                    ("oauth_signature_method", "HMACSHA1");
+                    ("oauth_signature_method", "HMAC-SHA1");
                     ("oauth_timestamp", generateTimeStamp ())]
     let baseString = oParams
                     |> parameterizeMany
                     |> assembleBaseString POST target
+                    //|> assembleBaseString GET target
     let signature = generateSignatureWithHMACSHA1 secretKeys baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: oParams
         |> List.sortBy (fun (key, value) -> key)
         |> parameterizeMany
         |> keyValueMany
+//        |> HttpUtility.HtmlEncode
     "OAuth " + oParamsWithSignature
+//    oParamsWithSignature
 
 let getRequestToken target consumerKey secretKeys =
     async {
         let wc = new System.Net.WebClient ()
-        wc.Headers.Add ("Authorization", (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys))
-        let! result = wc.AsyncUploadString (new Uri (target)) "POST" ""
+//        wc.Headers.Add ("Authorization", (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys))
+        let! result = wc.AsyncUploadString (new Uri (target)) "POST" (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys)
+        //let! result = wc.AsyncUploadString (new Uri (target)) "POST" ""
+        //let! result = wc.AsyncDownloadString (new Uri (target))
         return result
     } |> Async.RunSynchronously

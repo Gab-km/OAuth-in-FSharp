@@ -132,6 +132,17 @@ let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを
                             (auth, "OAuth oauth_consumer_key=test_consumer_key" +
                                     "&oauth_nonce=\d{18}" +
                                     "&oauth_signature=[A-Za-z0-9\+\-]+=" +
-                                    "&oauth_signature_method=HMACSHA1" +
+                                    "&oauth_signature_method=HMAC-SHA1" +
                                     "&oauth_timestamp=\d{10}")))
+    |> Verify
+
+[<Scenario>]
+let ``OAuthパラメータを'key="value", ...'の形式に変換する`` () =
+    Given [OAuthParameter ("oauth_consumer_key", "XXXX");
+            OAuthParameter ("oauth_nonce", "1111");
+            OAuthParameter ("oauth_signature", "YYYY")]
+    |> headerKeyValue
+    |> It should equal ("oauth_consumer_key=\"XXXX\", " +
+                        "oauth_nonce=\"1111\", " +
+                        "oauth_signature=\"YYYY\"")
     |> Verify
