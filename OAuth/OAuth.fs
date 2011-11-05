@@ -35,7 +35,7 @@ let headerKeyValue oParams =
     | x::xs -> oParams
                 |> List.map (fun (OAuthParameter (key, value)) ->
                                 key + "=\"" + value + "\"")
-                |> List.fold (fun s t -> if s = "" then t else s + ", " + t) ""
+                |> List.fold (concatStringsWithToken ", ") ""
     | _ -> ""
 
 let keyValue oParam =
@@ -45,7 +45,7 @@ let keyValue oParam =
 let keyValueMany oParams =
     let keyValues = oParams |> List.map keyValue
     match keyValues with
-    | x::y::xs ->  List.fold (fun s t -> if s = "" then t else s + "&" + t) "" keyValues
+    | x::y::xs ->  List.fold (concatStringsWithToken "&") "" keyValues
     | x::xs -> x + "&"
     | _ -> ""
 
@@ -60,7 +60,7 @@ let makeSignatureParameter consumerKey tokenSecret =
     { consumer_key=consumerKey; token_secret=tokenSecret }
 
 let concatSecretKeys = function
-    | x::y::xs -> List.fold (fun s t -> if s = "" then t else s + "&" + t) "" (x::y::xs)
+    | x::y::xs -> List.fold (concatStringsWithToken "&") "" (x::y::xs)
     | x::xs -> x + "&"
     | _ -> ""
 
