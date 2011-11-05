@@ -47,9 +47,9 @@ let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆
 
 [<Scenario>]
 let ``区切り文字を指定して空でない2つの文字列を連結する`` () =
-    Given (", ", "hoge", "fuga")
-    |||> When concatStringsWithToken
-    |> It should equal "hoge, fuga"
+    Given [(", ", "hoge", "fuga"); ("&", "spam", "eggs")]
+    |> When List.map ((<|||) concatStringsWithToken)
+    |> It should equal ["hoge, fuga"; "spam&eggs"]
     |> Verify
 
 [<Scenario>]

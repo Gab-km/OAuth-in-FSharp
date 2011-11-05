@@ -28,7 +28,7 @@ let urlEncode (urlString : string) =
     |> List.fold (fun s1 s2 -> s1 + s2) ""
 
 let concatStringsWithToken token s1 s2 =
-    if s1 = "" then s2 else s1 + ", " + s2
+    if s1 = "" then s2 else s1 + token + s2
 
 let headerKeyValue oParams =
     match oParams with
