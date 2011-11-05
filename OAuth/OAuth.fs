@@ -2,7 +2,7 @@
 
 open System
 open System.Text
-open System.Web
+//open System.Web
 open OAuth.ExtendedWebClient
 
 type OAuthParameter = OAuthParameter of string * string
@@ -16,6 +16,18 @@ let parameterize key value = OAuthParameter (key, value)
 
 let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
 
+let urlEncode (urlString : string) =
+    let validChars = List.ofSeq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"
+    let urlChars = List.ofSeq urlString
+    urlChars
+    |> List.map
+        (fun c ->
+            if List.exists (fun v -> v = c) validChars then c.ToString()
+            else
+                let bt = Text.Encoding.ASCII.GetBytes (c.ToString ())
+                String.Format ("%{0:X2}", bt.[0]))
+    |> List.fold (fun s1 s2 -> s1 + s2) ""
+
 let headerKeyValue oParams =
     match oParams with
     | x::xs -> oParams
@@ -26,7 +38,7 @@ let headerKeyValue oParams =
 
 let keyValue oParam =
     match oParam with
-    | OAuthParameter (key, value) -> key + "=" + (HttpUtility.HtmlEncode value)
+    | OAuthParameter (key, value) -> key + "=" + (urlEncode value)
 
 let keyValueMany oParams =
     let keyValues = oParams |> List.map keyValue
@@ -56,13 +68,13 @@ let generateSignature algorithmType secretKeys (baseString : string) =
     | HMACSHA1 ->
         use algorithm = new System.Security.Cryptography.HMACSHA1 (keysParam |> Encoding.ASCII.GetBytes)
         baseString
-        |> System.Web.HttpUtility.HtmlEncode
         |> Encoding.ASCII.GetBytes
         |> algorithm.ComputeHash
         |> Convert.ToBase64String
+        |> urlEncode
     | PLAINTEXT ->
         baseString
-        |> HttpUtility.HtmlEncode
+        |> urlEncode
     | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
 
 let generateSignatureWithHMACSHA1 = generateSignature HMACSHA1
@@ -75,11 +87,12 @@ let getHttpMethodString = function
 
 let assembleBaseString httpMethod targetUrl oauthParameter =
     let meth =getHttpMethodString httpMethod
-    let sanitizedUrl = targetUrl |> HttpUtility.HtmlEncode
+    let sanitizedUrl = targetUrl |> urlEncode
     let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
     let arrangedParams = oauthParameter
                         |> sortParameters
                         |> keyValueMany
+                        |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
 let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
@@ -87,6 +100,8 @@ let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
                     ("oauth_nonce", generateNonce ());
                     ("oauth_signature_method", "HMAC-SHA1");
                     ("oauth_timestamp", generateTimeStamp ())]
+                    |> List.sortBy (fun (key, value) -> key)
+                    |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = oParams
                     |> parameterizeMany
                     |> assembleBaseString POST target
@@ -94,19 +109,23 @@ let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
     let signature = generateSignatureWithHMACSHA1 secretKeys baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: oParams
-        |> List.sortBy (fun (key, value) -> key)
         |> parameterizeMany
-        |> keyValueMany
-//        |> HttpUtility.HtmlEncode
+        //|> keyValueMany
+        |> headerKeyValue
     "OAuth " + oParamsWithSignature
 //    oParamsWithSignature
 
 let getRequestToken target consumerKey secretKeys =
     async {
         let wc = new System.Net.WebClient ()
-//        wc.Headers.Add ("Authorization", (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys))
-        let! result = wc.AsyncUploadString (new Uri (target)) "POST" (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys)
-        //let! result = wc.AsyncUploadString (new Uri (target)) "POST" ""
-        //let! result = wc.AsyncDownloadString (new Uri (target))
+        let url = Uri (target)
+        let header = generateAuthorizationHeaderForRequestToken target consumerKey secretKeys
+        Console.WriteLine header
+        wc.Headers.Add ("Authorization", header)
+        //wc.Headers.Add ("Content-Type", "application/x-www-form-urlencoded")
+        Console.WriteLine wc.Headers
+//        let! result = wc.AsyncUploadString url "POST" (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys)
+        let! result = wc.AsyncUploadString url "POST" ""
+        //let! result = wc.AsyncDownloadString url
         return result
     } |> Async.RunSynchronously

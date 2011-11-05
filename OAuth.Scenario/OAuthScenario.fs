@@ -117,7 +117,7 @@ let ``与えられたクエリパラメータをキーの昇順でソートす�
             OAuthParameter ("oauth_nonce", "1111");
             OAuthParameter ("oauth_signature", "YYYY")]
     |> When assembleBaseString POST "http://hoge.com"
-    |> It should equal ("POST&http://hoge.com&"
+    |> It should equal ("POST&http%3A%2F%2Fhoge.com%2F&"
                         + "oauth_consumer_key=XXXX&oauth_nonce=1111&"
                         + "oauth_signature=YYYY&oauth_signature_method=HMACSHA1&"
                         + "oauth_timestamp=1234567890")
@@ -128,10 +128,11 @@ let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを
     Given "test_consumer_key"
     |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" <| ["fuga"]
     |> It should be (fun auth ->
+                        System.Console.WriteLine auth;
                         (Regex.IsMatch
                             (auth, "OAuth oauth_consumer_key=test_consumer_key" +
                                     "&oauth_nonce=\d{18}" +
-                                    "&oauth_signature=[A-Za-z0-9\+\-]+=" +
+                                    "&oauth_signature=[A-Za-z0-9\+\-%]+%3D" +
                                     "&oauth_signature_method=HMAC-SHA1" +
                                     "&oauth_timestamp=\d{10}")))
     |> Verify
@@ -145,4 +146,11 @@ let ``OAuthパラメータを'key="value", ...'の形式に変換する`` () =
     |> It should equal ("oauth_consumer_key=\"XXXX\", " +
                         "oauth_nonce=\"1111\", " +
                         "oauth_signature=\"YYYY\"")
+    |> Verify
+
+[<Scenario>]
+let ``[A-Za-z0-9\-\_\.\~]以外の文字列を16進数に変換する`` () =
+    Given ["hoge"; "http://fuga.com"]
+    |> When List.map urlEncode
+    |> It should equal ["hoge"; "http%3A%2F%2Ffuga.com"]
     |> Verify
