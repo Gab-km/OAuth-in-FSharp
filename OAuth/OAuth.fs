@@ -2,7 +2,6 @@
 
 open System
 open System.Text
-//open System.Web
 open OAuth.ExtendedWebClient
 
 type OAuthParameter = OAuthParameter of string * string
@@ -105,27 +104,19 @@ let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
     let baseString = oParams
                     |> parameterizeMany
                     |> assembleBaseString POST target
-                    //|> assembleBaseString GET target
     let signature = generateSignatureWithHMACSHA1 secretKeys baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: oParams
         |> parameterizeMany
-        //|> keyValueMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
-//    oParamsWithSignature
 
 let getRequestToken target consumerKey secretKeys =
     async {
         let wc = new System.Net.WebClient ()
         let url = Uri (target)
         let header = generateAuthorizationHeaderForRequestToken target consumerKey secretKeys
-        Console.WriteLine header
         wc.Headers.Add ("Authorization", header)
-        //wc.Headers.Add ("Content-Type", "application/x-www-form-urlencoded")
-        Console.WriteLine wc.Headers
-//        let! result = wc.AsyncUploadString url "POST" (generateAuthorizationHeaderForRequestToken target consumerKey secretKeys)
         let! result = wc.AsyncUploadString url "POST" ""
-        //let! result = wc.AsyncDownloadString url
         return result
     } |> Async.RunSynchronously

@@ -92,7 +92,7 @@ let ``concatSecretKeysで秘密鍵を3つ与えたとき＆で連結する`` () 
 let ``HMAC-SHA1でgenerateSignatureする`` () =
     Given "hoge"
     |> When generateSignatureWithHMACSHA1 ["fuga"]
-    |> It should equal "jMn6Vt7g5k4F4S666n/LeFwmJWI="
+    |> It should equal "jMn6Vt7g5k4F4S666n%2FLeFwmJWI%3D"
     |> Verify
 
 [<Scenario>]
@@ -110,17 +110,17 @@ let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedException�
     |> Verify
 
 [<Scenario>]
-let ``与えられたクエリパラメータをキーの昇順でソートする`` () =
+let ``与えられたクエリパラメータを使ってベース文字列を作成するする`` () =
     Given [OAuthParameter ("oauth_consumer_key", "XXXX");
             OAuthParameter ("oauth_signature_method", "HMACSHA1");
             OAuthParameter ("oauth_timestamp", "1234567890");
             OAuthParameter ("oauth_nonce", "1111");
             OAuthParameter ("oauth_signature", "YYYY")]
     |> When assembleBaseString POST "http://hoge.com"
-    |> It should equal ("POST&http%3A%2F%2Fhoge.com%2F&"
-                        + "oauth_consumer_key=XXXX&oauth_nonce=1111&"
-                        + "oauth_signature=YYYY&oauth_signature_method=HMACSHA1&"
-                        + "oauth_timestamp=1234567890")
+    |> It should equal ("POST&http%3A%2F%2Fhoge.com&"
+                        + "oauth_consumer_key%3DXXXX%26oauth_nonce%3D1111%26"
+                        + "oauth_signature%3DYYYY%26oauth_signature_method%3DHMACSHA1%26"
+                        + "oauth_timestamp%3D1234567890")
     |> Verify
 
 [<Scenario>]
@@ -130,11 +130,12 @@ let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを
     |> It should be (fun auth ->
                         System.Console.WriteLine auth;
                         (Regex.IsMatch
-                            (auth, "OAuth oauth_consumer_key=test_consumer_key" +
-                                    "&oauth_nonce=\d{18}" +
-                                    "&oauth_signature=[A-Za-z0-9\+\-%]+%3D" +
-                                    "&oauth_signature_method=HMAC-SHA1" +
-                                    "&oauth_timestamp=\d{10}")))
+                            (auth, "OAuth " +
+                                    "oauth_signature=\"[A-Za-z0-9\+\-%]+%3D\", " +
+                                    "oauth_consumer_key=\"test_consumer_key\", " +
+                                    "oauth_nonce=\"\d{18}\", " +
+                                    "oauth_signature_method=\"HMAC-SHA1\", " +
+                                    "oauth_timestamp=\"\d{10}\"")))
     |> Verify
 
 [<Scenario>]
