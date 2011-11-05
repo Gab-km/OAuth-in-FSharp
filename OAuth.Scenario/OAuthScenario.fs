@@ -46,6 +46,13 @@ let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆
     |> Verify
 
 [<Scenario>]
+let ``区切り文字を指定して空でない2つの文字列を連結する`` () =
+    Given (", ", "hoge", "fuga")
+    |||> When concatStringsWithToken
+    |> It should equal "hoge, fuga"
+    |> Verify
+
+[<Scenario>]
 let ``generateNonceしてみる`` () =
     Given ()
     |> When generateNonce
@@ -116,7 +123,7 @@ let ``与えられたクエリパラメータを使ってベース文字列を�
             OAuthParameter ("oauth_timestamp", "1234567890");
             OAuthParameter ("oauth_nonce", "1111");
             OAuthParameter ("oauth_signature", "YYYY")]
-    |> When assembleBaseString POST "http://hoge.com"
+    |> When assembleBaseString "POST" "http://hoge.com"
     |> It should equal ("POST&http%3A%2F%2Fhoge.com&"
                         + "oauth_consumer_key%3DXXXX%26oauth_nonce%3D1111%26"
                         + "oauth_signature%3DYYYY%26oauth_signature_method%3DHMACSHA1%26"
@@ -126,7 +133,7 @@ let ``与えられたクエリパラメータを使ってベース文字列を�
 [<Scenario>]
 let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
     Given "test_consumer_key"
-    |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" <| ["fuga"]
+    |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST" <| ["fuga"]
     |> It should be (fun auth ->
                         System.Console.WriteLine auth;
                         (Regex.IsMatch

@@ -16,16 +16,19 @@ let parameterize key value = OAuthParameter (key, value)
 let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
 
 let urlEncode (urlString : string) =
-    let validChars = List.ofSeq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"
     let urlChars = List.ofSeq urlString
-    urlChars
-    |> List.map
-        (fun c ->
-            if List.exists (fun v -> v = c) validChars then c.ToString()
+    let encodeChar c =
+        let validChars = List.ofSeq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"
+        if List.exists (fun v -> v = c) validChars then c.ToString()
             else
                 let bt = Text.Encoding.ASCII.GetBytes (c.ToString ())
-                String.Format ("%{0:X2}", bt.[0]))
+                String.Format ("%{0:X2}", bt.[0])
+    urlChars
+    |> List.map encodeChar
     |> List.fold (fun s1 s2 -> s1 + s2) ""
+
+let concatStringsWithToken token s1 s2 =
+    if s1 = "" then s2 else s1 + ", " + s2
 
 let headerKeyValue oParams =
     match oParams with
@@ -62,10 +65,11 @@ let concatSecretKeys = function
     | _ -> ""
 
 let generateSignature algorithmType secretKeys (baseString : string) =
-    let keysParam = concatSecretKeys secretKeys
+    let keysParam = secretKeys |> concatSecretKeys |> Encoding.ASCII.GetBytes
     match algorithmType with
     | HMACSHA1 ->
-        use algorithm = new System.Security.Cryptography.HMACSHA1 (keysParam |> Encoding.ASCII.GetBytes)
+        use algorithm =
+            new System.Security.Cryptography.HMACSHA1 (keysParam)
         baseString
         |> Encoding.ASCII.GetBytes
         |> algorithm.ComputeHash
@@ -84,8 +88,7 @@ let getHttpMethodString = function
     | GET -> "GET"
     | POST -> "POST"
 
-let assembleBaseString httpMethod targetUrl oauthParameter =
-    let meth =getHttpMethodString httpMethod
+let assembleBaseString meth targetUrl oauthParameter =
     let sanitizedUrl = targetUrl |> urlEncode
     let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
     let arrangedParams = oauthParameter
@@ -94,7 +97,7 @@ let assembleBaseString httpMethod targetUrl oauthParameter =
                         |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
-let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
+let generateAuthorizationHeaderForRequestToken target httpMethod consumerKey secretKeys =
     let oParams = [("oauth_consumer_key", consumerKey);
                     ("oauth_nonce", generateNonce ());
                     ("oauth_signature_method", "HMAC-SHA1");
@@ -103,7 +106,7 @@ let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
                     |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = oParams
                     |> parameterizeMany
-                    |> assembleBaseString POST target
+                    |> assembleBaseString httpMethod target
     let signature = generateSignatureWithHMACSHA1 secretKeys baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: oParams
@@ -111,12 +114,13 @@ let generateAuthorizationHeaderForRequestToken target consumerKey secretKeys =
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
 
-let getRequestToken target consumerKey secretKeys =
+let getRequestToken target httpMethod consumerKey secretKeys =
     async {
         let wc = new System.Net.WebClient ()
         let url = Uri (target)
-        let header = generateAuthorizationHeaderForRequestToken target consumerKey secretKeys
+        let meth = getHttpMethodString httpMethod
+        let header = generateAuthorizationHeaderForRequestToken target meth consumerKey secretKeys
         wc.Headers.Add ("Authorization", header)
-        let! result = wc.AsyncUploadString url "POST" ""
+        let! result = wc.AsyncUploadString url meth ""
         return result
     } |> Async.RunSynchronously
