@@ -102,7 +102,6 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerKey sec
                     ("oauth_nonce", generateNonce ());
                     ("oauth_signature_method", "HMAC-SHA1");
                     ("oauth_timestamp", generateTimeStamp ())]
-                    |> List.sortBy (fun (key, value) -> key)
                     |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = oParams
                     |> parameterizeMany
