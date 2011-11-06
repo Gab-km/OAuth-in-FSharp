@@ -3,24 +3,36 @@ module OAuth.API
 open OAuth.Base
 open OAuth.ExtendedWebClient
 
-let getRequestToken target httpMethod consumerKey secretKeys =
+type ConsumerInfo = { consumerKey : string; consumerSecret : string }
+type RequestInfo = { requestToken : string; requestSecret : string }
+
+let getRequestToken target httpMethod consumerInfo =
     async {
         let wc = new System.Net.WebClient ()
         let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
-        let header = generateAuthorizationHeaderForRequestToken target meth consumerKey secretKeys
+        let { consumerKey=key; consumerSecret=secret} = consumerInfo
+        let header = generateAuthorizationHeaderForRequestToken target meth key [secret]
         wc.Headers.Add ("Authorization", header)
         let! result = wc.AsyncUploadString url meth ""
-        return result
+        return result |> fromKeyValue
     } |> Async.RunSynchronously
 
-let getAccessToken target httpMethod consumerKey requestToken pinCode secretKeys =
+let getRequestTokenByGet target consumerInfo = getRequestToken target GET consumerInfo
+let getRequestTokenByPost target consumerInfo = getRequestToken target POST consumerInfo
+
+let getAccessToken target httpMethod consumerInfo requestInfo pinCode =
     async {
         let wc = new System.Net.WebClient ()
         let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
-        let header = generateAuthorizationHeaderForAccessToken target meth consumerKey requestToken pinCode secretKeys
+        let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
+        let { requestToken=requestToken; requestSecret=requestSecret } = requestInfo
+        let header = generateAuthorizationHeaderForAccessToken target meth consumerKey requestToken pinCode [consumerSecret; requestSecret]
         wc.Headers.Add ("Authorization", header)
         let! result = wc.AsyncUploadString url meth ""
-        return result
+        return result |> fromKeyValue
     } |> Async.RunSynchronously
+
+let getAccessTokenByGet target consumerInfo requestInfo pinCode = getAccessToken target GET consumerInfo requestInfo pinCode
+let getAccessTokenByPost target consumerInfo requestInfo pinCode = getAccessToken target POST consumerInfo requestInfo pinCode
