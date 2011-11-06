@@ -94,3 +94,21 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerKey sec
         |> parameterizeMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
+
+let generateAuthorizationHeaderForAccessToken target httpMethod consumerKey requestToken pinCode secretKeys =
+    let oParams = [("oauth_consumer_key", consumerKey);
+                    ("oauth_token", requestToken);
+                    ("oauth_verifier", pinCode);
+                    ("oauth_nonce", generateNonce ());
+                    ("oauth_signature_method", "HMAC-SHA1");
+                    ("oauth_timestamp", generateTimeStamp ())]
+                    |> List.map (fun (key, value) -> (key, urlEncode value))
+    let baseString = oParams
+                    |> parameterizeMany
+                    |> assembleBaseString httpMethod target
+    let signature = generateSignatureWithHMACSHA1 secretKeys baseString
+    let oParamsWithSignature =
+        ("oauth_signature", signature) :: oParams
+        |> parameterizeMany
+        |> headerKeyValue
+    "OAuth " + oParamsWithSignature
