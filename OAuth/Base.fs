@@ -33,6 +33,13 @@ let keyValueMany oParams =
     | x::xs -> x + "&"
     | _ -> ""
 
+let fromKeyValue (keyValueString : string) =
+    keyValueString.Split [|'&'|]
+    |> List.ofArray
+    |> List.map
+        (fun (s : string) -> s.Split [|'='|] )
+    |> List.map (fun kv -> parameterize kv.[0] kv.[1])
+
 let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 
 let generateTimeStamp () =

@@ -95,6 +95,15 @@ module Base =
         |> Verify
 
     [<Scenario>]
+    let ``KeyValue形式の文字列をOAuthパラメータのリストに変換する`` () =
+        Given "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
+        |> When fromKeyValue
+        |> It should equal [OAuthParameter ("oauth_consumer_key", "XXXX");
+                            OAuthParameter ("oauth_nonce", "1111");
+                            OAuthParameter ("oauth_signature", "YYYY")]
+        |> Verify
+
+    [<Scenario>]
     let ``generateNonceしてみる`` () =
         Given ()
         |> When generateNonce
