@@ -1,6 +1,5 @@
-﻿module OAuthScenario
+module OAuthScenario
 
-open System.Text.RegularExpressions
 open NaturalSpec
 open NUnit.Framework
 open OAuth.Utilities
@@ -99,7 +98,8 @@ module Base =
     let ``generateNonceしてみる`` () =
         Given ()
         |> When generateNonce
-        |> It should be (fun nonce -> Regex.IsMatch (nonce, "\d{18}"))
+        |> It should be (fun nonce ->
+            System.Text.RegularExpressions.Regex.IsMatch (nonce, "\d{18}"))
         |> Verify
 
     [<Scenario>]
@@ -108,13 +108,6 @@ module Base =
         |> When generateTimeStamp
         |> calculating (fun s -> s.Length)
         |> It should equal 10
-        |> Verify
-
-    [<Scenario>]
-    let ``generateSignatureParameterする`` () =
-        Given ("hoge", Some("fuga"))
-        ||> When makeSignatureParameter
-        |> It should equal { consumer_key="hoge"; token_secret=Some("fuga") }
         |> Verify
 
     [<Scenario>]
@@ -157,7 +150,7 @@ module Base =
         Given ("test_consumer_key",  ["fuga"])
         ||> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST"
         |> It should be (fun auth ->
-            (Regex.IsMatch
+            (System.Text.RegularExpressions.Regex.IsMatch
                 (auth, "OAuth " +
                         "oauth_signature=\"[A-Za-z0-9\+\-%]+%3D\", " +
                         "oauth_consumer_key=\"test_consumer_key\", " +

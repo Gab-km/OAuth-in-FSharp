@@ -1,4 +1,4 @@
-﻿module OAuth.ExtendedWebClient
+module OAuth.ExtendedWebClient
 
 type System.Net.WebClient with
 

@@ -1,4 +1,4 @@
-﻿module OAuth.API
+module OAuth.API
 
 open OAuth.Base
 open OAuth.ExtendedWebClient

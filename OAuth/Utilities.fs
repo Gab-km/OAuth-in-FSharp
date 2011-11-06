@@ -1,4 +1,4 @@
-﻿module OAuth.Utilities
+module OAuth.Utilities
 
 let inline concatStringsWithToken token s1 s2 =
     if s1 = "" then s2 else s1 + token + s2

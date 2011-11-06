@@ -1,4 +1,4 @@
-﻿module OAuth.Base
+module OAuth.Base
 
 open System
 open System.Text
@@ -7,7 +7,6 @@ open OAuth.Utilities
 type OAuthParameter = OAuthParameter of string * string
 
 type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
-type SignatureParameter = { consumer_key : string; token_secret : string option }
 
 type HttpMethod = GET | POST
 
@@ -39,9 +38,6 @@ let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 let generateTimeStamp () =
     ((DateTime.UtcNow - DateTime (1970, 1, 1, 0, 0, 0, 0)).TotalSeconds
      |> Convert.ToInt64).ToString ()
-
-let makeSignatureParameter consumerKey tokenSecret =
-    { consumer_key=consumerKey; token_secret=tokenSecret }
 
 let generateSignature algorithmType secretKeys (baseString : string) =
     let keysParam = secretKeys |> concatSecretKeys |> Encoding.ASCII.GetBytes
