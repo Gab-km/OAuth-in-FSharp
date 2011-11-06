@@ -10,6 +10,9 @@ type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
 
 type HttpMethod = GET | POST
 
+type ConsumerInfo = { consumerKey : string; consumerSecret : string }
+type RequestInfo = { requestToken : string; requestSecret : string }
+
 let parameterize key value = OAuthParameter (key, value)
 
 let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
@@ -91,6 +94,18 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerKey sec
         |> parameterizeMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
+
+let makeOParamsForGenerateHeader consumerInfo requestInfo pinCode =
+    let { consumerKey=consumerKey; consumerSecret=_ } = consumerInfo
+    let oParams = [("oauth_consumer_key", consumerKey);
+                    ("oauth_nonce", generateNonce ());
+                    ("oauth_signature_method", "HMAC-SHA1");
+                    ("oauth_timestamp", generateTimeStamp ())]
+    match (requestInfo, pinCode) with
+    | (Some rInfo, Some pCode) ->
+        let { requestToken=requestToken; requestSecret=_ } = rInfo
+        ("oauth_token", requestToken)::("oauth_verifier", pCode)::oParams
+    | _ -> oParams
 
 let generateAuthorizationHeaderForAccessToken target httpMethod consumerKey requestToken pinCode secretKeys =
     let oParams = [("oauth_consumer_key", consumerKey);

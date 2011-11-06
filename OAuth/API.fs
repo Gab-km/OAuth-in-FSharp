@@ -3,9 +3,6 @@ module OAuth.API
 open OAuth.Base
 open OAuth.ExtendedWebClient
 
-type ConsumerInfo = { consumerKey : string; consumerSecret : string }
-type RequestInfo = { requestToken : string; requestSecret : string }
-
 let getRequestToken target httpMethod consumerInfo =
     async {
         let wc = new System.Net.WebClient ()

@@ -155,6 +155,20 @@ module Base =
         |> Verify
 
     [<Scenario>]
+    let ``generateHeader用のoParamsを作成する`` () =
+        Given ({ consumerKey="XXXX"; consumerSecret="hoge" }, None, None)
+        |||> When makeOParamsForGenerateHeader
+        |> (fun ls ->
+            match ls with
+            | [("oauth_consumer_key", "XXXX");
+                ("oauth_nonce", _);
+                ("oauth_signature_method", "HMAC-SHA1");
+                ("oauth_timestamp", _)] -> None
+            | _ as bad -> Some bad)
+        |> It should equal None
+        |> Verify
+
+    [<Scenario>]
     let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
         Given ("test_consumer_key",  ["fuga"])
         ||> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST"
