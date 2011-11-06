@@ -3,7 +3,7 @@
 open System.Text.RegularExpressions
 open NaturalSpec
 open NUnit.Framework
-open OAuth.APIs
+open OAuth.Base
 
 module Utilities =
     [<Scenario>]
@@ -41,7 +41,7 @@ module Utilities =
         |> It should equal ["hoge"; "http%3A%2F%2Ffuga.com"]
         |> Verify
 
-module APIs =
+module Base =
     [<Scenario>]
     let ``OAuthパラメータを作る`` () =
         Given (parameterize "oauth_nonce" "1111")
@@ -80,6 +80,17 @@ module APIs =
         Given [OAuthParameter ("oauth_consumer_key", "XXXX")]
         |> When keyValueMany
         |> It should equal "oauth_consumer_key=XXXX&"
+        |> Verify
+
+    [<Scenario>]
+    let ``OAuthパラメータを'key="value", ...'の形式に変換する`` () =
+        Given [OAuthParameter ("oauth_consumer_key", "XXXX");
+                OAuthParameter ("oauth_nonce", "1111");
+                OAuthParameter ("oauth_signature", "YYYY")]
+        |> headerKeyValue
+        |> It should equal ("oauth_consumer_key=\"XXXX\", " +
+                            "oauth_nonce=\"1111\", " +
+                            "oauth_signature=\"YYYY\"")
         |> Verify
 
     [<Scenario>]
@@ -151,15 +162,4 @@ module APIs =
                         "oauth_nonce=\"\d{18}\", " +
                         "oauth_signature_method=\"HMAC-SHA1\", " +
                         "oauth_timestamp=\"\d{10}\"")))
-        |> Verify
-
-    [<Scenario>]
-    let ``OAuthパラメータを'key="value", ...'の形式に変換する`` () =
-        Given [OAuthParameter ("oauth_consumer_key", "XXXX");
-                OAuthParameter ("oauth_nonce", "1111");
-                OAuthParameter ("oauth_signature", "YYYY")]
-        |> headerKeyValue
-        |> It should equal ("oauth_consumer_key=\"XXXX\", " +
-                            "oauth_nonce=\"1111\", " +
-                            "oauth_signature=\"YYYY\"")
         |> Verify
