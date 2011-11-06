@@ -16,15 +16,16 @@ let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key val
 
 let headerKeyValue oParams =
     match oParams with
-    | x::xs -> oParams
-                |> List.map (fun (OAuthParameter (key, value)) ->
-                                key + "=\"" + value + "\"")
-                |> List.fold (concatStringsWithToken ", ") ""
+    | x::xs ->
+        oParams
+        |> List.map (fun (OAuthParameter (key, value)) ->
+                        key + "=\"" + value + "\"")
+        |> List.fold (concatStringsWithToken ", ") ""
     | _ -> ""
 
 let keyValue oParam =
-    match oParam with
-    | OAuthParameter (key, value) -> key + "=" + (urlEncode value)
+    let (OAuthParameter (key, value)) = oParam
+    key + "=" + (urlEncode value)
 
 let keyValueMany oParams =
     let keyValues = oParams |> List.map keyValue
@@ -36,9 +37,8 @@ let keyValueMany oParams =
 let fromKeyValue (keyValueString : string) =
     keyValueString.Split [|'&'|]
     |> List.ofArray
-    |> List.map
-        (fun (s : string) -> s.Split [|'='|] )
-    |> List.map (fun kv -> parameterize kv.[0] kv.[1])
+    |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
+                (fun kv -> parameterize kv.[0] kv.[1]))
 
 let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 
@@ -50,16 +50,13 @@ let generateSignature algorithmType secretKeys (baseString : string) =
     let keysParam = secretKeys |> concatSecretKeys |> Encoding.ASCII.GetBytes
     match algorithmType with
     | HMACSHA1 ->
-        use algorithm =
-            new System.Security.Cryptography.HMACSHA1 (keysParam)
+        use algorithm = new System.Security.Cryptography.HMACSHA1 (keysParam)
         baseString
         |> Encoding.ASCII.GetBytes
         |> algorithm.ComputeHash
         |> Convert.ToBase64String
         |> urlEncode
-    | PLAINTEXT ->
-        baseString
-        |> urlEncode
+    | PLAINTEXT -> baseString |> urlEncode
     | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
 
 let inline generateSignatureWithHMACSHA1 secretKeys baseString = generateSignature HMACSHA1 secretKeys baseString
@@ -72,9 +69,9 @@ let getHttpMethodString = function
 
 let assembleBaseString meth targetUrl oauthParameter =
     let sanitizedUrl = targetUrl |> urlEncode
-    let sortedParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
+    let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
     let arrangedParams = oauthParameter
-                        |> sortedParameters
+                        |> sortParameters
                         |> keyValueMany
                         |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams
