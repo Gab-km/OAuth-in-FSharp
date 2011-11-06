@@ -1,13 +1,12 @@
 ﻿module OAuth.API
 
-open System
 open OAuth.Base
 open OAuth.ExtendedWebClient
 
 let getRequestToken target httpMethod consumerKey secretKeys =
     async {
         let wc = new System.Net.WebClient ()
-        let url = Uri (target)
+        let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
         let header = generateAuthorizationHeaderForRequestToken target meth consumerKey secretKeys
         wc.Headers.Add ("Authorization", header)

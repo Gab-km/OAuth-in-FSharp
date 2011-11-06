@@ -2,6 +2,7 @@
 
 open System
 open System.Text
+open OAuth.Utilities
 
 type OAuthParameter = OAuthParameter of string * string
 
@@ -13,21 +14,6 @@ type HttpMethod = GET | POST
 let parameterize key value = OAuthParameter (key, value)
 
 let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
-
-let urlEncode (urlString : string) =
-    let urlChars = List.ofSeq urlString
-    let encodeChar c =
-        let validChars = List.ofSeq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"
-        if List.exists (fun v -> v = c) validChars then c.ToString()
-            else
-                let bt = Text.Encoding.ASCII.GetBytes (c.ToString ())
-                String.Format ("%{0:X2}", bt.[0])
-    urlChars
-    |> List.map encodeChar
-    |> List.fold (fun s1 s2 -> s1 + s2) ""
-
-let concatStringsWithToken token s1 s2 =
-    if s1 = "" then s2 else s1 + token + s2
 
 let headerKeyValue oParams =
     match oParams with
@@ -48,8 +34,7 @@ let keyValueMany oParams =
     | x::xs -> x + "&"
     | _ -> ""
 
-let generateNonce () =
-    DateTime.Now.Ticks.ToString ()
+let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 
 let generateTimeStamp () =
     ((DateTime.UtcNow - DateTime (1970, 1, 1, 0, 0, 0, 0)).TotalSeconds
@@ -57,11 +42,6 @@ let generateTimeStamp () =
 
 let makeSignatureParameter consumerKey tokenSecret =
     { consumer_key=consumerKey; token_secret=tokenSecret }
-
-let concatSecretKeys = function
-    | x::y::xs -> List.fold (concatStringsWithToken "&") "" (x::y::xs)
-    | x::xs -> x + "&"
-    | _ -> ""
 
 let generateSignature algorithmType secretKeys (baseString : string) =
     let keysParam = secretKeys |> concatSecretKeys |> Encoding.ASCII.GetBytes
@@ -79,9 +59,9 @@ let generateSignature algorithmType secretKeys (baseString : string) =
         |> urlEncode
     | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
 
-let generateSignatureWithHMACSHA1 = generateSignature HMACSHA1
-let generateSignatureWithPLAINTEXT = generateSignature PLAINTEXT
-let generateSignatureWithRSASHA1 = generateSignature RSASHA1
+let inline generateSignatureWithHMACSHA1 secretKeys baseString = generateSignature HMACSHA1 secretKeys baseString
+let inline generateSignatureWithPLAINTEXT secretKeys baseString = generateSignature PLAINTEXT secretKeys baseString
+let inline generateSignatureWithRSASHA1 secretKeys baseString = generateSignature RSASHA1 secretKeys baseString
 
 let getHttpMethodString = function
     | GET -> "GET"
@@ -89,9 +69,9 @@ let getHttpMethodString = function
 
 let assembleBaseString meth targetUrl oauthParameter =
     let sanitizedUrl = targetUrl |> urlEncode
-    let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
+    let sortedParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
     let arrangedParams = oauthParameter
-                        |> sortParameters
+                        |> sortedParameters
                         |> keyValueMany
                         |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams

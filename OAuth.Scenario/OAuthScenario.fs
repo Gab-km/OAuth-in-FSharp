@@ -3,6 +3,7 @@
 open System.Text.RegularExpressions
 open NaturalSpec
 open NUnit.Framework
+open OAuth.Utilities
 open OAuth.Base
 
 module Utilities =
@@ -44,7 +45,8 @@ module Utilities =
 module Base =
     [<Scenario>]
     let ``OAuthパラメータを作る`` () =
-        Given (parameterize "oauth_nonce" "1111")
+        Given ("oauth_nonce", "1111")
+        ||> When parameterize
         |> It should equal (OAuthParameter ("oauth_nonce", "1111"))
         |> Verify
 
