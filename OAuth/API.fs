@@ -22,9 +22,7 @@ let getAccessToken target httpMethod consumerInfo requestInfo pinCode =
         let wc = new System.Net.WebClient ()
         let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
-        let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
-        let { requestToken=requestToken; requestSecret=requestSecret } = requestInfo
-        let header = generateAuthorizationHeaderForAccessToken target meth consumerKey requestToken pinCode [consumerSecret; requestSecret]
+        let header = generateAuthorizationHeaderForAccessToken target meth consumerInfo requestInfo pinCode
         wc.Headers.Add ("Authorization", header)
         let! result = wc.AsyncUploadString url meth ""
         return result |> fromKeyValue

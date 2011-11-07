@@ -106,7 +106,9 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
 
-let generateAuthorizationHeaderForAccessToken target httpMethod consumerKey requestToken pinCode secretKeys =
+let generateAuthorizationHeaderForAccessToken target httpMethod consumerInfo requestInfo pinCode =
+    let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
+    let { requestToken=requestToken; requestSecret=requestSecret } = requestInfo
     let oParams = [("oauth_consumer_key", consumerKey);
                     ("oauth_token", requestToken);
                     ("oauth_verifier", pinCode);
@@ -117,7 +119,7 @@ let generateAuthorizationHeaderForAccessToken target httpMethod consumerKey requ
     let baseString = oParams
                     |> parameterizeMany
                     |> assembleBaseString httpMethod target
-    let signature = generateSignatureWithHMACSHA1 secretKeys baseString
+    let signature = generateSignatureWithHMACSHA1 [consumerSecret; requestSecret] baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: oParams
         |> parameterizeMany
