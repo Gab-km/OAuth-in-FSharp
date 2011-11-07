@@ -61,7 +61,7 @@ let useWebService target httpMethod consumerInfo accessInfo =
                 let header = generateAuthorizationHeaderForWebService target meth consumerInfo accessInfo
                 wc.Headers.Add ("Authorization", header)
                 wc.AsyncUploadString url meth ""
-        return result |> fromKeyValue
+        return result
     } |> Async.RunSynchronously
 
 let useWebServiceByGet target consumerInfo accessInfo = useWebService target GET consumerInfo accessInfo
