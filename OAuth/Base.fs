@@ -79,7 +79,8 @@ let assembleBaseString meth targetUrl oauthParameter =
                         |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
-let generateAuthorizationHeaderForRequestToken target httpMethod consumerKey secretKeys =
+let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
+    let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
     let oParams = [("oauth_consumer_key", consumerKey);
                     ("oauth_nonce", generateNonce ());
                     ("oauth_signature_method", "HMAC-SHA1");
@@ -88,7 +89,7 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerKey sec
     let baseString = oParams
                     |> parameterizeMany
                     |> assembleBaseString httpMethod target
-    let signature = generateSignatureWithHMACSHA1 secretKeys baseString
+    let signature = generateSignatureWithHMACSHA1 [consumerSecret] baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: oParams
         |> parameterizeMany

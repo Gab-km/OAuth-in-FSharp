@@ -188,8 +188,8 @@ module Base =
 
     [<Scenario>]
     let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
-        Given ("test_consumer_key",  ["fuga"])
-        ||> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST"
+        Given ({ consumerKey="test_consumer_key"; consumerSecret="fuga" })
+        |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST"
         |> It should be (fun auth ->
             (System.Text.RegularExpressions.Regex.IsMatch
                 (auth, "OAuth " +

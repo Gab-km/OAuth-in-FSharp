@@ -8,8 +8,7 @@ let getRequestToken target httpMethod consumerInfo =
         let wc = new System.Net.WebClient ()
         let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
-        let { consumerKey=key; consumerSecret=secret} = consumerInfo
-        let header = generateAuthorizationHeaderForRequestToken target meth key [secret]
+        let header = generateAuthorizationHeaderForRequestToken target meth consumerInfo
         wc.Headers.Add ("Authorization", header)
         let! result = wc.AsyncUploadString url meth ""
         return result |> fromKeyValue
