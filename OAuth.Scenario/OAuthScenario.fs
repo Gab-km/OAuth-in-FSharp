@@ -182,6 +182,22 @@ module Base =
         |> Verify
 
     [<Scenario>]
+    let ``ConsumerInfo、AccessInfoでgenerateHeader用のタプルリストを作成する`` () =
+        Given ForWebService ({ consumerKey="XXXX"; consumerSecret="hoge" },
+                            { accessToken="ZZZZ"; accessSecret="bar"})
+        |> When makeKeyValueTuplesForGenerateHeader
+        |> (fun ls ->
+            match ls with
+            | [("oauth_consumer_key", "XXXX");
+                ("oauth_token", "ZZZZ");
+                ("oauth_nonce", _);
+                ("oauth_signature_method", "HMAC-SHA1");
+                ("oauth_timestamp", _)] -> None
+            | _ as bad -> Some bad)
+        |> It should equal None
+        |> Verify
+
+    [<Scenario>]
     let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
         Given ({ consumerKey="test_consumer_key"; consumerSecret="fuga" })
         |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST"
