@@ -9,9 +9,16 @@ let getRequestToken target httpMethod consumerInfo =
         let wc = new System.Net.WebClient ()
         let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
-        let header = generateAuthorizationHeaderForRequestToken target meth consumerInfo
-        wc.Headers.Add ("Authorization", header)
-        let! result = wc.AsyncUploadString url meth ""
+        let! result =
+            match httpMethod with
+            | GET ->
+                let header = generateAuthorizationHeaderForRequestToken target meth consumerInfo
+                wc.Headers.Add ("Authorization", header)
+                wc.AsyncDownloadString url
+            | POST ->
+                let header = generateAuthorizationHeaderForRequestToken target meth consumerInfo
+                wc.Headers.Add ("Authorization", header)
+                wc.AsyncUploadString url meth ""
         return result |> fromKeyValue
     } |> Async.RunSynchronously
 
@@ -23,9 +30,16 @@ let getAccessToken target httpMethod consumerInfo requestInfo pinCode =
         let wc = new System.Net.WebClient ()
         let url = System.Uri (target)
         let meth = getHttpMethodString httpMethod
-        let header = generateAuthorizationHeaderForAccessToken target meth consumerInfo requestInfo pinCode
-        wc.Headers.Add ("Authorization", header)
-        let! result = wc.AsyncUploadString url meth ""
+        let! result =
+            match httpMethod with
+            | GET ->
+                let header = generateAuthorizationHeaderForAccessToken target meth consumerInfo requestInfo pinCode
+                wc.Headers.Add ("Authorization", header)
+                wc.AsyncDownloadString url
+            | POST ->
+                let header = generateAuthorizationHeaderForAccessToken target meth consumerInfo requestInfo pinCode
+                wc.Headers.Add ("Authorization", header)
+                wc.AsyncUploadString url meth ""
         return result |> fromKeyValue
     } |> Async.RunSynchronously
 
