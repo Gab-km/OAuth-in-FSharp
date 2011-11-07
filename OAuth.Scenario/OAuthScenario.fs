@@ -46,7 +46,7 @@ module Base =
     let ``OAuthパラメータを作る`` () =
         Given ("oauth_nonce", "1111")
         ||> When makeOAuthParameter
-        |> It should equal (OAuthParameter ("oauth_nonce", "1111"))
+        |> It should equal (KeyValue ("oauth_nonce", "1111"))
         |> Verify
 
     [<Scenario>]
@@ -62,32 +62,32 @@ module Base =
                 ("oauth_nonce", "1111");
                 ("oauth_signature", "YYYY")]
         |> When parameterizeMany
-        |> It should equal [OAuthParameter ("oauth_consumer_key", "XXXX");
-                            OAuthParameter ("oauth_nonce", "1111");
-                            OAuthParameter ("oauth_signature", "YYYY")]
+        |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
+                            KeyValue ("oauth_nonce", "1111");
+                            KeyValue ("oauth_signature", "YYYY")]
         |> Verify
 
     [<Scenario>]
     let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して連結する`` () =
-        Given [OAuthParameter ("oauth_consumer_key", "XXXX");
-                OAuthParameter ("oauth_nonce", "1111");
-                OAuthParameter ("oauth_signature", "YYYY")]
+        Given [KeyValue ("oauth_consumer_key", "XXXX");
+                KeyValue ("oauth_nonce", "1111");
+                KeyValue ("oauth_signature", "YYYY")]
         |> When keyValueMany
         |> It should equal "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
         |> Verify
 
     [<Scenario>]
     let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆に変換する`` () =
-        Given [OAuthParameter ("oauth_consumer_key", "XXXX")]
+        Given [KeyValue ("oauth_consumer_key", "XXXX")]
         |> When keyValueMany
         |> It should equal "oauth_consumer_key=XXXX&"
         |> Verify
 
     [<Scenario>]
     let ``OAuthパラメータを'key="value", ...'の形式に変換する`` () =
-        Given [OAuthParameter ("oauth_consumer_key", "XXXX");
-                OAuthParameter ("oauth_nonce", "1111");
-                OAuthParameter ("oauth_signature", "YYYY")]
+        Given [KeyValue ("oauth_consumer_key", "XXXX");
+                KeyValue ("oauth_nonce", "1111");
+                KeyValue ("oauth_signature", "YYYY")]
         |> headerKeyValue
         |> It should equal ("oauth_consumer_key=\"XXXX\", " +
                             "oauth_nonce=\"1111\", " +
@@ -98,9 +98,9 @@ module Base =
     let ``KeyValue形式の文字列をOAuthパラメータのリストに変換する`` () =
         Given "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
         |> When fromKeyValue
-        |> It should equal [OAuthParameter ("oauth_consumer_key", "XXXX");
-                            OAuthParameter ("oauth_nonce", "1111");
-                            OAuthParameter ("oauth_signature", "YYYY")]
+        |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
+                            KeyValue ("oauth_nonce", "1111");
+                            KeyValue ("oauth_signature", "YYYY")]
         |> Verify
 
     [<Scenario>]
@@ -142,11 +142,11 @@ module Base =
 
     [<Scenario>]
     let ``与えられたクエリパラメータを使ってベース文字列を作成するする`` () =
-        Given [OAuthParameter ("oauth_consumer_key", "XXXX");
-                OAuthParameter ("oauth_signature_method", "HMACSHA1");
-                OAuthParameter ("oauth_timestamp", "1234567890");
-                OAuthParameter ("oauth_nonce", "1111");
-                OAuthParameter ("oauth_signature", "YYYY")]
+        Given [KeyValue ("oauth_consumer_key", "XXXX");
+                KeyValue ("oauth_signature_method", "HMACSHA1");
+                KeyValue ("oauth_timestamp", "1234567890");
+                KeyValue ("oauth_nonce", "1111");
+                KeyValue ("oauth_signature", "YYYY")]
         |> When assembleBaseString "POST" "http://hoge.com"
         |> It should equal ("POST&http%3A%2F%2Fhoge.com&"
                             + "oauth_consumer_key%3DXXXX%26oauth_nonce%3D1111%26"

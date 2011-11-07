@@ -4,7 +4,7 @@ open System
 open System.Text
 open OAuth.Utilities
 
-type OAuthParameter = OAuthParameter of string * string
+type ParameterKeyValue = KeyValue of string * string
 
 type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
 
@@ -13,7 +13,7 @@ type HttpMethod = GET | POST
 type ConsumerInfo = { consumerKey : string; consumerSecret : string }
 type RequestInfo = { requestToken : string; requestSecret : string }
 
-let makeOAuthParameter key value = OAuthParameter (key, value)
+let makeOAuthParameter key value = KeyValue (key, value)
 
 let parameterizeMany kvList = List.map (fun (key, value) -> makeOAuthParameter key value) kvList
 
@@ -21,13 +21,13 @@ let headerKeyValue oParams =
     match oParams with
     | x::xs ->
         oParams
-        |> List.map (fun (OAuthParameter (key, value)) ->
+        |> List.map (fun (KeyValue (key, value)) ->
                         key + "=\"" + value + "\"")
         |> List.fold (concatStringsWithToken ", ") ""
     | _ -> ""
 
 let parameterize keyValue =
-    let (OAuthParameter (key, value)) = keyValue
+    let (KeyValue (key, value)) = keyValue
     key + "=" + (urlEncode value)
 
 let keyValueMany oParams =
@@ -72,7 +72,7 @@ let getHttpMethodString = function
 
 let assembleBaseString meth targetUrl oauthParameter =
     let sanitizedUrl = targetUrl |> urlEncode
-    let sortParameters = List.sortBy (fun (OAuthParameter (key, value)) -> key)
+    let sortParameters = List.sortBy (fun (KeyValue (key, value)) -> key)
     let arrangedParams = oauthParameter
                         |> sortParameters
                         |> keyValueMany
