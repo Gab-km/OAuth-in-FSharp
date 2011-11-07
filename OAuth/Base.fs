@@ -69,29 +69,35 @@ let assembleBaseString meth targetUrl oauthParameter =
                         |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
-let makeKeyValueTuplesForGenerateHeader consumerInfo requestInfo pinCode =
-    let { consumerKey=consumerKey; consumerSecret=_ } = consumerInfo
-    let keyValues = [("oauth_consumer_key", consumerKey);
-                    ("oauth_nonce", generateNonce ());
+let makeKeyValueTuplesForGenerateHeader useFor =
+    let keyValues = [("oauth_nonce", generateNonce ());
                     ("oauth_signature_method", "HMAC-SHA1");
                     ("oauth_timestamp", generateTimeStamp ())]
-    match (requestInfo, pinCode) with
-    | (Some rInfo, Some pCode) ->
-        let { requestToken=requestToken; requestSecret=_ } = rInfo
-        ("oauth_token", requestToken)::("oauth_verifier", pCode)::keyValues
-    | _ -> keyValues
+    match useFor with
+    | ForRequestToken (consumerInfo) ->
+        ("oauth_consumer_key", consumerInfo.consumerKey)::keyValues
+    | ForAccessToken (consumerInfo, requestInfo, pinCode) ->
+        ("oauth_consumer_key", consumerInfo.consumerKey)::
+        ("oauth_token", requestInfo.requestToken)::
+        ("oauth_verifier", pinCode)::
+        keyValues
+    | ForWebService (consumerInfo, accessInfo) ->
+        ("oauth_consumer_key", consumerInfo.consumerKey)::
+        ("oauth_token", accessInfo.accessToken)::
+        keyValues
 
-let generateAuthorizationHeader target httpMethod consumerInfo requestInfo pinCode =
-    let keyValues = (consumerInfo, requestInfo, pinCode)
-                    |||> makeKeyValueTuplesForGenerateHeader
+let generateAuthorizationHeader target httpMethod useFor =
+    let keyValues = useFor
+                    |> makeKeyValueTuplesForGenerateHeader
                     |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = keyValues
                     |> keyValueMany
                     |> assembleBaseString httpMethod target
     let secretKeys =
-        match (requestInfo, pinCode) with
-        | (Some rInfo, Some pCode) -> [consumerInfo.consumerSecret; rInfo.requestSecret]
-        | _ -> [consumerInfo.consumerSecret]
+        match useFor with
+        | ForRequestToken (consumerInfo) -> [consumerInfo.consumerSecret]
+        | ForAccessToken (consumerInfo, requestInfo, pinCode) -> [consumerInfo.consumerSecret; requestInfo.requestSecret]
+        | ForWebService (consumerInfo, accessInfo) -> [consumerInfo.consumerSecret; accessInfo.accessSecret]
     let signature = generateSignatureWithHMACSHA1 secretKeys baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: keyValues
@@ -100,7 +106,10 @@ let generateAuthorizationHeader target httpMethod consumerInfo requestInfo pinCo
     "OAuth " + oParamsWithSignature
 
 let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
-    generateAuthorizationHeader target httpMethod consumerInfo None None
+    generateAuthorizationHeader target httpMethod (ForRequestToken consumerInfo)
 
 let generateAuthorizationHeaderForAccessToken target httpMethod consumerInfo requestInfo pinCode =
-    generateAuthorizationHeader target httpMethod consumerInfo (Some requestInfo) (Some pinCode)
+    generateAuthorizationHeader target httpMethod (ForAccessToken (consumerInfo, requestInfo, pinCode))
+
+let generateAuthorizationHeaderForWebService target httpMethod consumerInfo accessInfo =
+    generateAuthorizationHeader target httpMethod (ForWebService (consumerInfo, accessInfo))

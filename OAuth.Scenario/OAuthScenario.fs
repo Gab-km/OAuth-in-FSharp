@@ -151,8 +151,8 @@ module Base =
 
     [<Scenario>]
     let ``ConsumerInfoのみでgenerateHeader用のタプルリストを作成する`` () =
-        Given ({ consumerKey="XXXX"; consumerSecret="hoge" }, None, None)
-        |||> When makeKeyValueTuplesForGenerateHeader
+        Given ForRequestToken { consumerKey="XXXX"; consumerSecret="hoge" }
+        |> When makeKeyValueTuplesForGenerateHeader
         |> (fun ls ->
             match ls with
             | [("oauth_consumer_key", "XXXX");
@@ -165,15 +165,15 @@ module Base =
 
     [<Scenario>]
     let ``ConsumerInfo、RequestInfo、pinCodeでgenerateHeader用のタプルリストを作成する`` () =
-        Given ({ consumerKey="XXXX"; consumerSecret="hoge" },
-                Some { requestToken="YYYY"; requestSecret="fuga"},
-                Some "123456")
-        |||> When makeKeyValueTuplesForGenerateHeader
+        Given ForAccessToken ({ consumerKey="XXXX"; consumerSecret="hoge" },
+                            { requestToken="YYYY"; requestSecret="fuga"},
+                            "123456")
+        |> When makeKeyValueTuplesForGenerateHeader
         |> (fun ls ->
             match ls with
-            | [("oauth_token", "YYYY");
+            | [("oauth_consumer_key", "XXXX");
+                ("oauth_token", "YYYY");
                 ("oauth_verifier", "123456");
-                ("oauth_consumer_key", "XXXX");
                 ("oauth_nonce", _);
                 ("oauth_signature_method", "HMAC-SHA1");
                 ("oauth_timestamp", _)] -> None

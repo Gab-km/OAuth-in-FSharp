@@ -45,3 +45,24 @@ let getAccessToken target httpMethod consumerInfo requestInfo pinCode =
 
 let getAccessTokenByGet target consumerInfo requestInfo pinCode = getAccessToken target GET consumerInfo requestInfo pinCode
 let getAccessTokenByPost target consumerInfo requestInfo pinCode = getAccessToken target POST consumerInfo requestInfo pinCode
+
+let useWebService target httpMethod consumerInfo accessInfo =
+    async {
+        let wc = new System.Net.WebClient ()
+        let url = System.Uri (target)
+        let meth = getHttpMethodString httpMethod
+        let! result =
+            match httpMethod with
+            | GET ->
+                let header = generateAuthorizationHeaderForWebService target meth consumerInfo accessInfo
+                wc.Headers.Add ("Authorization", header)
+                wc.AsyncDownloadString url
+            | POST ->
+                let header = generateAuthorizationHeaderForWebService target meth consumerInfo accessInfo
+                wc.Headers.Add ("Authorization", header)
+                wc.AsyncUploadString url meth ""
+        return result |> fromKeyValue
+    } |> Async.RunSynchronously
+
+let useWebServiceByGet target consumerInfo accessInfo = useWebService target GET consumerInfo accessInfo
+let useWebServiceByPost target consumerInfo accessInfo = useWebService target POST consumerInfo accessInfo
