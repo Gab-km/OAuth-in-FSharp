@@ -155,12 +155,30 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``generateHeader用のoParamsを作成する`` () =
+    let ``ConsumerInfoのみでgenerateHeader用のタプルリストを作成する`` () =
         Given ({ consumerKey="XXXX"; consumerSecret="hoge" }, None, None)
         |||> When makeOParamsForGenerateHeader
         |> (fun ls ->
             match ls with
             | [("oauth_consumer_key", "XXXX");
+                ("oauth_nonce", _);
+                ("oauth_signature_method", "HMAC-SHA1");
+                ("oauth_timestamp", _)] -> None
+            | _ as bad -> Some bad)
+        |> It should equal None
+        |> Verify
+
+    [<Scenario>]
+    let ``ConsumerInfo、RequestInfo、pinCodeでgenerateHeader用のタプルリストを作成する`` () =
+        Given ({ consumerKey="XXXX"; consumerSecret="hoge" },
+                Some { requestToken="YYYY"; requestSecret="fuga"},
+                Some "123456")
+        |||> When makeOParamsForGenerateHeader
+        |> (fun ls ->
+            match ls with
+            | [("oauth_token", "YYYY");
+                ("oauth_verifier", "123456");
+                ("oauth_consumer_key", "XXXX");
                 ("oauth_nonce", _);
                 ("oauth_signature_method", "HMAC-SHA1");
                 ("oauth_timestamp", _)] -> None
