@@ -1,11 +1,10 @@
 module OAuthScenario
 
 open NaturalSpec
-open NUnit.Framework
-open OAuth.Utilities
-open OAuth.Base
 
 module Utilities =
+    open OAuth.Utilities
+
     [<Scenario>]
     let ``区切り文字を指定して空でない2つの文字列を連結する`` () =
         Given [(", ", "hoge", "fuga"); ("&", "spam", "eggs")]
@@ -42,6 +41,9 @@ module Utilities =
         |> Verify
 
 module Base =
+    open OAuth.Base
+    open OAuth.Types
+
     [<Scenario>]
     let ``KeyValueをパラメータ形式の文字列に変換する`` () =
         Given (KeyValue ("oauth_nonce", "1111"))

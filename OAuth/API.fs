@@ -1,5 +1,6 @@
 module OAuth.API
 
+open OAuth.Types
 open OAuth.Base
 open OAuth.ExtendedWebClient
 

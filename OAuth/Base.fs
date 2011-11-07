@@ -3,15 +3,7 @@ module OAuth.Base
 open System
 open System.Text
 open OAuth.Utilities
-
-type ParameterKeyValue = KeyValue of string * string
-
-type HashAlgorithm = HMACSHA1 | PLAINTEXT | RSASHA1
-
-type HttpMethod = GET | POST
-
-type ConsumerInfo = { consumerKey : string; consumerSecret : string }
-type RequestInfo = { requestToken : string; requestSecret : string }
+open OAuth.Types
 
 let keyValueMany tupleList = List.map KeyValue tupleList
 
