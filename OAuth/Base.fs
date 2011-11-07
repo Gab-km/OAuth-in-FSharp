@@ -109,12 +109,8 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
 let generateAuthorizationHeaderForAccessToken target httpMethod consumerInfo requestInfo pinCode =
     let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
     let { requestToken=requestToken; requestSecret=requestSecret } = requestInfo
-    let oParams = [("oauth_consumer_key", consumerKey);
-                    ("oauth_token", requestToken);
-                    ("oauth_verifier", pinCode);
-                    ("oauth_nonce", generateNonce ());
-                    ("oauth_signature_method", "HMAC-SHA1");
-                    ("oauth_timestamp", generateTimeStamp ())]
+    let oParams = (consumerInfo, Some requestInfo, Some pinCode)
+                    |||> makeKeyValueTuplesForGenerateHeader
                     |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = oParams
                     |> parameterizeMany
