@@ -92,32 +92,30 @@ let makeKeyValueTuplesForGenerateHeader consumerInfo requestInfo pinCode =
     | _ -> oParams
 
 let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
-    let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
-    let oParams = (consumerInfo, None, None)
+    let keyValues = (consumerInfo, None, None)
                     |||> makeKeyValueTuplesForGenerateHeader
                     |> List.map (fun (key, value) -> (key, urlEncode value))
-    let baseString = oParams
+    let baseString = keyValues
                     |> parameterizeMany
                     |> assembleBaseString httpMethod target
-    let signature = generateSignatureWithHMACSHA1 [consumerSecret] baseString
+    let signature = generateSignatureWithHMACSHA1 [consumerInfo.consumerSecret] baseString
     let oParamsWithSignature =
-        ("oauth_signature", signature) :: oParams
+        ("oauth_signature", signature) :: keyValues
         |> parameterizeMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
 
 let generateAuthorizationHeaderForAccessToken target httpMethod consumerInfo requestInfo pinCode =
-    let { consumerKey=consumerKey; consumerSecret=consumerSecret } = consumerInfo
-    let { requestToken=requestToken; requestSecret=requestSecret } = requestInfo
-    let oParams = (consumerInfo, Some requestInfo, Some pinCode)
+    let keyValues = (consumerInfo, Some requestInfo, Some pinCode)
                     |||> makeKeyValueTuplesForGenerateHeader
                     |> List.map (fun (key, value) -> (key, urlEncode value))
-    let baseString = oParams
+    let baseString = keyValues
                     |> parameterizeMany
                     |> assembleBaseString httpMethod target
-    let signature = generateSignatureWithHMACSHA1 [consumerSecret; requestSecret] baseString
+    let signature = generateSignatureWithHMACSHA1 [consumerInfo.consumerSecret;
+                                                    requestInfo.requestSecret] baseString
     let oParamsWithSignature =
-        ("oauth_signature", signature) :: oParams
+        ("oauth_signature", signature) :: keyValues
         |> parameterizeMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
