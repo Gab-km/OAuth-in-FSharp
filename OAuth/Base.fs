@@ -13,8 +13,6 @@ type HttpMethod = GET | POST
 type ConsumerInfo = { consumerKey : string; consumerSecret : string }
 type RequestInfo = { requestToken : string; requestSecret : string }
 
-let makeParameterKeyValue key value = KeyValue (key, value)
-
 let keyValueMany tupleList = List.map KeyValue tupleList
 
 let headerKeyValue oParams =
@@ -41,7 +39,7 @@ let fromKeyValue (keyValueString : string) =
     keyValueString.Split [|'&'|]
     |> List.ofArray
     |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
-                (fun kv -> makeParameterKeyValue kv.[0] kv.[1]))
+                (fun kv -> KeyValue (kv.[0], kv.[1])))
 
 let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 

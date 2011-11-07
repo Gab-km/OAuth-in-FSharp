@@ -43,15 +43,8 @@ module Utilities =
 
 module Base =
     [<Scenario>]
-    let ``KeyValueを作る`` () =
-        Given ("oauth_nonce", "1111")
-        ||> When makeParameterKeyValue
-        |> It should equal (KeyValue ("oauth_nonce", "1111"))
-        |> Verify
-
-    [<Scenario>]
     let ``KeyValueをパラメータ形式の文字列に変換する`` () =
-        Given (makeParameterKeyValue "oauth_nonce" "1111")
+        Given (KeyValue ("oauth_nonce", "1111"))
         |> When parameterize
         |> It should equal "oauth_nonce=1111"
         |> Verify
