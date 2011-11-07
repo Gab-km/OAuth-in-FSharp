@@ -81,15 +81,15 @@ let assembleBaseString meth targetUrl oauthParameter =
 
 let makeKeyValueTuplesForGenerateHeader consumerInfo requestInfo pinCode =
     let { consumerKey=consumerKey; consumerSecret=_ } = consumerInfo
-    let oParams = [("oauth_consumer_key", consumerKey);
+    let keyValues = [("oauth_consumer_key", consumerKey);
                     ("oauth_nonce", generateNonce ());
                     ("oauth_signature_method", "HMAC-SHA1");
                     ("oauth_timestamp", generateTimeStamp ())]
     match (requestInfo, pinCode) with
     | (Some rInfo, Some pCode) ->
         let { requestToken=requestToken; requestSecret=_ } = rInfo
-        ("oauth_token", requestToken)::("oauth_verifier", pCode)::oParams
-    | _ -> oParams
+        ("oauth_token", requestToken)::("oauth_verifier", pCode)::keyValues
+    | _ -> keyValues
 
 let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
     let keyValues = (consumerInfo, None, None)
