@@ -13,9 +13,9 @@ type HttpMethod = GET | POST
 type ConsumerInfo = { consumerKey : string; consumerSecret : string }
 type RequestInfo = { requestToken : string; requestSecret : string }
 
-let parameterize key value = OAuthParameter (key, value)
+let makeOAuthParameter key value = OAuthParameter (key, value)
 
-let parameterizeMany kvList = List.map (fun (key, value) -> parameterize key value) kvList
+let parameterizeMany kvList = List.map (fun (key, value) -> makeOAuthParameter key value) kvList
 
 let headerKeyValue oParams =
     match oParams with
@@ -26,12 +26,12 @@ let headerKeyValue oParams =
         |> List.fold (concatStringsWithToken ", ") ""
     | _ -> ""
 
-let keyValue oParam =
-    let (OAuthParameter (key, value)) = oParam
+let parameterize keyValue =
+    let (OAuthParameter (key, value)) = keyValue
     key + "=" + (urlEncode value)
 
 let keyValueMany oParams =
-    let keyValues = oParams |> List.map keyValue
+    let keyValues = oParams |> List.map parameterize
     match keyValues with
     | x::y::xs ->  List.fold (concatStringsWithToken "&") "" keyValues
     | x::xs -> x + "&"
@@ -41,7 +41,7 @@ let fromKeyValue (keyValueString : string) =
     keyValueString.Split [|'&'|]
     |> List.ofArray
     |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
-                (fun kv -> parameterize kv.[0] kv.[1]))
+                (fun kv -> makeOAuthParameter kv.[0] kv.[1]))
 
 let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 

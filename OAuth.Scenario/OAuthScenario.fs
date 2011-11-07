@@ -45,14 +45,14 @@ module Base =
     [<Scenario>]
     let ``OAuthパラメータを作る`` () =
         Given ("oauth_nonce", "1111")
-        ||> When parameterize
+        ||> When makeOAuthParameter
         |> It should equal (OAuthParameter ("oauth_nonce", "1111"))
         |> Verify
 
     [<Scenario>]
     let ``OAuthパラメータをKeyValue形式の文字列に変換する`` () =
-        Given (parameterize "oauth_nonce" "1111")
-        |> When keyValue
+        Given (makeOAuthParameter "oauth_nonce" "1111")
+        |> When parameterize
         |> It should equal "oauth_nonce=1111"
         |> Verify
 
