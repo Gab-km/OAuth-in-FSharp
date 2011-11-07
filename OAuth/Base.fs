@@ -13,9 +13,9 @@ type HttpMethod = GET | POST
 type ConsumerInfo = { consumerKey : string; consumerSecret : string }
 type RequestInfo = { requestToken : string; requestSecret : string }
 
-let makeOAuthParameter key value = KeyValue (key, value)
+let makeParameterKeyValue key value = KeyValue (key, value)
 
-let parameterizeMany kvList = List.map (fun (key, value) -> makeOAuthParameter key value) kvList
+let keyValueMany tupleList = List.map KeyValue tupleList
 
 let headerKeyValue oParams =
     match oParams with
@@ -30,7 +30,7 @@ let parameterize keyValue =
     let (KeyValue (key, value)) = keyValue
     key + "=" + (urlEncode value)
 
-let keyValueMany oParams =
+let toParameter oParams =
     let keyValues = oParams |> List.map parameterize
     match keyValues with
     | x::y::xs ->  List.fold (concatStringsWithToken "&") "" keyValues
@@ -41,7 +41,7 @@ let fromKeyValue (keyValueString : string) =
     keyValueString.Split [|'&'|]
     |> List.ofArray
     |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
-                (fun kv -> makeOAuthParameter kv.[0] kv.[1]))
+                (fun kv -> makeParameterKeyValue kv.[0] kv.[1]))
 
 let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 
@@ -75,7 +75,7 @@ let assembleBaseString meth targetUrl oauthParameter =
     let sortParameters = List.sortBy (fun (KeyValue (key, value)) -> key)
     let arrangedParams = oauthParameter
                         |> sortParameters
-                        |> keyValueMany
+                        |> toParameter
                         |> urlEncode
     meth + "&" + sanitizedUrl + "&" + arrangedParams
 
@@ -96,12 +96,12 @@ let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
                     |||> makeKeyValueTuplesForGenerateHeader
                     |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = keyValues
-                    |> parameterizeMany
+                    |> keyValueMany
                     |> assembleBaseString httpMethod target
     let signature = generateSignatureWithHMACSHA1 [consumerInfo.consumerSecret] baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: keyValues
-        |> parameterizeMany
+        |> keyValueMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature
 
@@ -110,12 +110,12 @@ let generateAuthorizationHeaderForAccessToken target httpMethod consumerInfo req
                     |||> makeKeyValueTuplesForGenerateHeader
                     |> List.map (fun (key, value) -> (key, urlEncode value))
     let baseString = keyValues
-                    |> parameterizeMany
+                    |> keyValueMany
                     |> assembleBaseString httpMethod target
     let signature = generateSignatureWithHMACSHA1 [consumerInfo.consumerSecret;
                                                     requestInfo.requestSecret] baseString
     let oParamsWithSignature =
         ("oauth_signature", signature) :: keyValues
-        |> parameterizeMany
+        |> keyValueMany
         |> headerKeyValue
     "OAuth " + oParamsWithSignature

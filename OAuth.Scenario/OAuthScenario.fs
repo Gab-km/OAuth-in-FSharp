@@ -43,48 +43,48 @@ module Utilities =
 
 module Base =
     [<Scenario>]
-    let ``OAuthパラメータを作る`` () =
+    let ``KeyValueを作る`` () =
         Given ("oauth_nonce", "1111")
-        ||> When makeOAuthParameter
+        ||> When makeParameterKeyValue
         |> It should equal (KeyValue ("oauth_nonce", "1111"))
         |> Verify
 
     [<Scenario>]
-    let ``OAuthパラメータをKeyValue形式の文字列に変換する`` () =
-        Given (makeOAuthParameter "oauth_nonce" "1111")
+    let ``KeyValueをパラメータ形式の文字列に変換する`` () =
+        Given (makeParameterKeyValue "oauth_nonce" "1111")
         |> When parameterize
         |> It should equal "oauth_nonce=1111"
         |> Verify
 
     [<Scenario>]
-    let ``複数のOAuthパラメータを一度に作る`` () =
+    let ``複数のKeyValueを一度に作る`` () =
         Given [("oauth_consumer_key", "XXXX");
                 ("oauth_nonce", "1111");
                 ("oauth_signature", "YYYY")]
-        |> When parameterizeMany
+        |> When keyValueMany
         |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
                             KeyValue ("oauth_nonce", "1111");
                             KeyValue ("oauth_signature", "YYYY")]
         |> Verify
 
     [<Scenario>]
-    let ``複数のOAuthパラメータをKeyValue形式の文字列に変換して連結する`` () =
+    let ``KeyValueリストをパラメータ形式の文字列に変換して連結する`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
-        |> When keyValueMany
+        |> When toParameter
         |> It should equal "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
         |> Verify
 
     [<Scenario>]
-    let ``OAuthパラメータが1つだけの場合KeyValue形式の文字列＋＆に変換する`` () =
+    let ``KeyValueが1つだけの場合パラメータ形式の文字列＋＆に変換する`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX")]
-        |> When keyValueMany
+        |> When toParameter
         |> It should equal "oauth_consumer_key=XXXX&"
         |> Verify
 
     [<Scenario>]
-    let ``OAuthパラメータを'key="value", ...'の形式に変換する`` () =
+    let ``KeyValueリストを'key="value", ...'の形式に変換する`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
@@ -95,7 +95,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``KeyValue形式の文字列をOAuthパラメータのリストに変換する`` () =
+    let ``パラメータ形式の文字列をKeyValueリストに変換する`` () =
         Given "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
         |> When fromKeyValue
         |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
