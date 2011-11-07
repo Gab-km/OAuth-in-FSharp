@@ -4,6 +4,10 @@ open OAuth.Types
 open OAuth.Base
 open OAuth.ExtendedWebClient
 
+let tryGetValue keyValues key =
+    List.tryPick (fun (KeyValue (k, v)) ->
+                if k = key then Some v else None) keyValues
+
 let getRequestToken target httpMethod consumerInfo =
     async {
         let wc = new System.Net.WebClient ()
