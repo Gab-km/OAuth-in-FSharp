@@ -33,6 +33,10 @@ let fromKeyValue (keyValueString : string) =
     |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
                 (fun kv -> KeyValue (kv.[0], kv.[1])))
 
+let tryGetValue keyValues key =
+    List.tryPick (fun (KeyValue (k, v)) ->
+                if k = key then Some v else None) keyValues
+
 let inline generateNonce () = DateTime.Now.Ticks.ToString ()
 
 let generateTimeStamp () =

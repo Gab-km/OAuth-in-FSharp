@@ -4,10 +4,6 @@ open OAuth.Types
 open OAuth.Base
 open OAuth.ExtendedWebClient
 
-let tryGetValue keyValues key =
-    List.tryPick (fun (KeyValue (k, v)) ->
-                if k = key then Some v else None) keyValues
-
 let getRequestToken target httpMethod consumerInfo =
     async {
         let wc = new System.Net.WebClient ()
@@ -23,7 +19,7 @@ let getRequestToken target httpMethod consumerInfo =
                 let header = generateAuthorizationHeaderForRequestToken target meth consumerInfo
                 wc.Headers.Add ("Authorization", header)
                 wc.AsyncUploadString url meth ""
-        return result |> fromKeyValue
+        return result
     } |> Async.RunSynchronously
 
 let getRequestTokenByGet target consumerInfo = getRequestToken target GET consumerInfo
@@ -44,7 +40,7 @@ let getAccessToken target httpMethod consumerInfo requestInfo pinCode =
                 let header = generateAuthorizationHeaderForAccessToken target meth consumerInfo requestInfo pinCode
                 wc.Headers.Add ("Authorization", header)
                 wc.AsyncUploadString url meth ""
-        return result |> fromKeyValue
+        return result
     } |> Async.RunSynchronously
 
 let getAccessTokenByGet target consumerInfo requestInfo pinCode = getAccessToken target GET consumerInfo requestInfo pinCode

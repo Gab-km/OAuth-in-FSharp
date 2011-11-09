@@ -99,6 +99,16 @@ module Base =
         |> Verify
 
     [<Scenario>]
+    let ``KeyValueリストから指定したKeyを持つ要素を見つけるとSome Valueを返す`` () =
+        Given ([KeyValue ("oauth_consumer_key", "XXXX");
+                KeyValue ("oauth_nonce", "1111");
+                KeyValue ("oauth_signature", "YYYY")],
+                "oauth_nonce")
+        ||> When tryGetValue
+        |> It should equal (Some "1111")
+        |> Verify
+
+    [<Scenario>]
     let ``generateNonceしてみる`` () =
         Given ()
         |> When generateNonce
