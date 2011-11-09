@@ -1,4 +1,5 @@
 参考：The OAuth 1.0 Protocol http://tools.ietf.org/html/rfc5849
-* 与えられたパラメータでHTTP通信する関数を作る
-** リクエストトークンを取得する関数を作る
-** アクセストークンを取得する関数を作る
+* 以下の作業を英語で行う
+** XMLドキュメントを書く
+** readme.rstを書く
+* readmeJP.rstを日本語で書く
