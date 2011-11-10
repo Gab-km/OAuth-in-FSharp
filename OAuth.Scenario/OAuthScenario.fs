@@ -83,7 +83,7 @@ module Base =
         Given [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
-        |> headerKeyValue
+        |> headerParameter
         |> It should equal ("oauth_consumer_key=\"XXXX\", " +
                             "oauth_nonce=\"1111\", " +
                             "oauth_signature=\"YYYY\"")

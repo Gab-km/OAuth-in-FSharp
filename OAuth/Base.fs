@@ -7,7 +7,7 @@ open OAuth.Types
 
 let keyValueMany tupleList = List.map KeyValue tupleList
 
-let headerKeyValue oParams =
+let headerParameter oParams =
     match oParams with
     | x::xs ->
         oParams
@@ -106,7 +106,7 @@ let generateAuthorizationHeader target httpMethod useFor =
     let oParamsWithSignature =
         ("oauth_signature", signature) :: keyValues
         |> keyValueMany
-        |> headerKeyValue
+        |> headerParameter
     "OAuth " + oParamsWithSignature
 
 let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
