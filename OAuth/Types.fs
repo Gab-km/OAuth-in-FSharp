@@ -1,4 +1,4 @@
-﻿module OAuth.Types
+﻿namespace OAuth.Types
 
 type ParameterKeyValue = KeyValue of string * string
 
