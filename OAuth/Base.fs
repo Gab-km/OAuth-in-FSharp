@@ -27,8 +27,8 @@ let toParameter oParams =
     | x::xs -> x + "&"
     | _ -> ""
 
-let fromKeyValue (keyValueString : string) =
-    keyValueString.Split [|'&'|]
+let fromParameter (parameterString : string) =
+    parameterString.Split [|'&'|]
     |> List.ofArray
     |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
                 (fun kv -> KeyValue (kv.[0], kv.[1])))

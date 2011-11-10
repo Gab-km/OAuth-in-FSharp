@@ -92,7 +92,7 @@ module Base =
     [<Scenario>]
     let ``パラメータ形式の文字列をKeyValueリストに変換する`` () =
         Given "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
-        |> When fromKeyValue
+        |> When fromParameter
         |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
                             KeyValue ("oauth_nonce", "1111");
                             KeyValue ("oauth_signature", "YYYY")]
