@@ -2,14 +2,17 @@ namespace OAuth
 
 module Utilities =
 
+    [<CompiledName("ConcatStringsWithToken")>]
     let inline concatStringsWithToken token s1 s2 =
         if s1 = "" then s2 else s1 + token + s2
 
+    [<CompiledName("ConcatSecretKeys")>]
     let concatSecretKeys = function
         | x::y::xs -> List.fold (concatStringsWithToken "&") "" (x::y::xs)
         | x::xs -> x + "&"
         | _ -> ""
 
+    [<CompiledName("UrlEncode")>]
     let urlEncode (urlString : string) =
         let urlChars = List.ofSeq urlString
         let encodeChar c =
