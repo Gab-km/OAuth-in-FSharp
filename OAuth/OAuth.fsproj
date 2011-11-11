@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExtendedWebClient.fs" />
+    <Compile Include="Utilities.fsi" />
     <Compile Include="Utilities.fs" />
     <Compile Include="Types.fsi" />
     <Compile Include="Types.fs" />
