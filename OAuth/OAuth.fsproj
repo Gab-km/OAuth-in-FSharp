@@ -45,6 +45,7 @@
     <Compile Include="Utilities.fs" />
     <Compile Include="Types.fsi" />
     <Compile Include="Types.fs" />
+    <Compile Include="Base.fsi" />
     <Compile Include="Base.fs" />
     <Compile Include="API.fs" />
     <None Include="Script.fsx" />
