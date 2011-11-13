@@ -100,20 +100,20 @@ module Base =
 
     [<Scenario>]
     let ``KeyValueリストから指定したKeyを持つ要素を見つけるとSome Valueを返す`` () =
-        Given ([KeyValue ("oauth_consumer_key", "XXXX");
+        Given ("oauth_nonce",
+                [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
-                KeyValue ("oauth_signature", "YYYY")],
-                "oauth_nonce")
+                KeyValue ("oauth_signature", "YYYY")])
         ||> When tryGetValue
         |> It should equal (Some "1111")
         |> Verify
 
     [<Scenario>]
     let ``KeyValueリストから指定したKeyを持つ要素を見つけられないとNoneを返す`` () =
-        Given ([KeyValue ("oauth_consumer_key", "XXXX");
+        Given ("oauth_hoge",
+                [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
-                KeyValue ("oauth_signature", "YYYY")],
-                "oauth_hoge")
+                KeyValue ("oauth_signature", "YYYY")])
         ||> When tryGetValue
         |> It should equal None
         |> Verify

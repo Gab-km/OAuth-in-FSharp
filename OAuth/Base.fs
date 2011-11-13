@@ -9,23 +9,23 @@ module Base =
 
     let keyValueMany tupleList = List.map KeyValue tupleList
 
-    let headerParameter oParams =
-        match oParams with
-        | x::xs ->
-            oParams
+    let headerParameter keyValues =
+        match keyValues with
+        | [] -> ""
+        | _ ->
+            keyValues
             |> List.map (fun (KeyValue (key, value)) ->
                             key + "=\"" + value + "\"")
             |> List.fold (concatStringsWithToken ", ") ""
-        | _ -> ""
 
     let parameterize keyValue =
         let (KeyValue (key, value)) = keyValue
         key + "=" + (urlEncode value)
 
-    let toParameter oParams =
-        let keyValues = oParams |> List.map parameterize
-        match keyValues with
-        | x::y::xs ->  List.fold (concatStringsWithToken "&") "" keyValues
+    let toParameter keyValues =
+        let parameterized = keyValues |> List.map parameterize
+        match parameterized with
+        | x::y::xs ->  List.fold (concatStringsWithToken "&") "" parameterized
         | x::xs -> x + "&"
         | _ -> ""
 
@@ -35,7 +35,7 @@ module Base =
         |> List.map ((fun (s : string) -> s.Split [|'='|] ) >>
                     (fun kv -> KeyValue (kv.[0], kv.[1])))
 
-    let tryGetValue keyValues key =
+    let tryGetValue key keyValues =
         List.tryPick (fun (KeyValue (k, v)) ->
                     if k = key then Some v else None) keyValues
 
@@ -66,11 +66,11 @@ module Base =
         | GET -> "GET"
         | POST -> "POST"
 
-    let assembleBaseString meth targetUrl oauthParameter =
+    let assembleBaseString meth targetUrl keyValues =
         let sanitizedUrl = targetUrl |> urlEncode
-        let sortParameters = List.sortBy (fun (KeyValue (key, value)) -> key)
-        let arrangedParams = oauthParameter
-                            |> sortParameters
+        let sorKeyValues = List.sortBy (fun (KeyValue (key, value)) -> key)
+        let arrangedParams = keyValues
+                            |> sorKeyValues
                             |> toParameter
                             |> urlEncode
         meth + "&" + sanitizedUrl + "&" + arrangedParams
@@ -92,13 +92,13 @@ module Base =
             ("oauth_token", accessInfo.accessToken)::
             keyValues
 
-    let generateAuthorizationHeader target httpMethod useFor =
+    let generateAuthorizationHeader targetUrl httpMethod useFor =
         let keyValues = useFor
                         |> makeKeyValueTuplesForGenerateHeader
                         |> List.map (fun (key, value) -> (key, urlEncode value))
         let baseString = keyValues
                         |> keyValueMany
-                        |> assembleBaseString httpMethod target
+                        |> assembleBaseString httpMethod targetUrl
         let secretKeys =
             match useFor with
             | ForRequestToken (consumerInfo) -> [consumerInfo.consumerSecret]
@@ -111,11 +111,11 @@ module Base =
             |> headerParameter
         "OAuth " + oParamsWithSignature
 
-    let generateAuthorizationHeaderForRequestToken target httpMethod consumerInfo =
-        generateAuthorizationHeader target httpMethod (ForRequestToken consumerInfo)
+    let generateAuthorizationHeaderForRequestToken targetUrl httpMethod consumerInfo =
+        generateAuthorizationHeader targetUrl httpMethod (ForRequestToken consumerInfo)
 
-    let generateAuthorizationHeaderForAccessToken target httpMethod consumerInfo requestInfo pinCode =
-        generateAuthorizationHeader target httpMethod (ForAccessToken (consumerInfo, requestInfo, pinCode))
+    let generateAuthorizationHeaderForAccessToken targetUrl httpMethod consumerInfo requestInfo pinCode =
+        generateAuthorizationHeader targetUrl httpMethod (ForAccessToken (consumerInfo, requestInfo, pinCode))
 
-    let generateAuthorizationHeaderForWebService target httpMethod consumerInfo accessInfo =
-        generateAuthorizationHeader target httpMethod (ForWebService (consumerInfo, accessInfo))
+    let generateAuthorizationHeaderForWebService targetUrl httpMethod consumerInfo accessInfo =
+        generateAuthorizationHeader targetUrl httpMethod (ForWebService (consumerInfo, accessInfo))
