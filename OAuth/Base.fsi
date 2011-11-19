@@ -81,11 +81,11 @@ module Base = begin
     val getHttpMethodString : HttpMethod -> string
 
     /// <summary>Returns the base string.</summary>
-    /// <param name="meth">The string representation of the HTTP method.</param>
     /// <param name="targetUrl">The URL string.</param>
+    /// <param name="meth">The string representation of the HTTP method.</param>
     /// <param name="keyValues">The ParameterKeyValue list.</param>
     /// <returns>The base string.</returns>
-    val assembleBaseString : (string -> string) -> string -> string -> ParameterKeyValue list -> string
+    val assembleBaseString : (string -> string) -> string -> HttpMethod -> ParameterKeyValue list -> string
 
     /// <summary>Returns the list of 2 strings tuple.</summary>
     /// <param name="useFor">The parameter of the OAuth API.</param>
@@ -97,14 +97,14 @@ module Base = begin
     /// <param name="httpMethod">The string that represents the HTTP method.</param>
     /// <param name="useFor">The parameter of the OAuth API.</param>
     /// <returns>The Authorization parameter in the HTTP header.</returns>
-    val generateAuthorizationHeader : (string -> string) -> string -> string -> UseFor -> string
+    val generateAuthorizationHeader : (string -> string) -> string -> HttpMethod -> UseFor -> string
 
     /// <summary>Returns the Authorization parameter in the HTTP header for the request token.</summary>
     /// <param name="targetUrl">The URL string.</param>
     /// <param name="httpMethod">The string that represents the HTTP method.</param>
     /// <param name="consumerInfo">The ConsumerInfo record.</param>
     /// <returns>The Authorization parameter in the HTTP header for the request token.</returns>
-    val generateAuthorizationHeaderForRequestToken : (string -> string) -> string -> string -> ConsumerInfo -> string
+    val generateAuthorizationHeaderForRequestToken : (string -> string) -> string -> HttpMethod -> ConsumerInfo -> string
 
     /// <summary>Returns the Authorization parameter in the HTTP header for the access token.</summary>
     /// <param name="targetUrl">The URL string.</param>
@@ -113,7 +113,7 @@ module Base = begin
     /// <param name="requestInfo">The RequestInfo record.</param>
     /// <param name="pinCode">The pin code.</param>
     /// <returns>The Authorization parameter in the HTTP header for the access token.</returns>
-    val generateAuthorizationHeaderForAccessToken : (string -> string) -> string -> string -> ConsumerInfo -> RequestInfo -> string -> string
+    val generateAuthorizationHeaderForAccessToken : (string -> string) -> string -> HttpMethod -> ConsumerInfo -> RequestInfo -> string -> string
 
     /// <summary>Returns the Authorization parameter in the HTTP header for using Web APIs.</summary>
     /// <param name="targetUrl">The URL string.</param>
@@ -121,7 +121,7 @@ module Base = begin
     /// <param name="consumerInfo">The ConsumerInfo record.</param>
     /// <param name="accessInfo">The AccessInfo record.</param>
     /// <returns>The Authorization parameter in the HTTP header for using Web APIs.</returns>
-    val generateAuthorizationHeaderForWebService : (string -> string) -> string -> string -> ConsumerInfo -> AccessInfo -> string
+    val generateAuthorizationHeaderForWebService : (string -> string) -> string -> HttpMethod -> ConsumerInfo -> AccessInfo -> string
 
-    val generateAuthorizationHeaderForWebServiceWithData : (string -> string) -> string -> string -> ConsumerInfo -> AccessInfo -> string -> string
+    val generateAuthorizationHeaderForWebServiceWithData : (string -> string) -> string -> HttpMethod -> ConsumerInfo -> AccessInfo -> string -> string
 end

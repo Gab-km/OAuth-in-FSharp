@@ -66,9 +66,10 @@ module Base =
         | GET -> "GET"
         | POST -> "POST"
 
-    let assembleBaseString encoder meth targetUrl keyValues =
+    let assembleBaseString encoder targetUrl httpMethod keyValues =
         let sanitizedUrl = targetUrl |> encoder
         let sorKeyValues = List.sortBy (fun (KeyValue (key, value)) -> key)
+        let meth = getHttpMethodString httpMethod
         let arrangedParams = keyValues
                             |> sorKeyValues
                             |> toParameter encoder
@@ -100,7 +101,7 @@ module Base =
                             | ForWebService (_, _, Some (key, value)) -> (key, value) :: keyValues
                             | _ -> keyValues
                             |> keyValueMany
-                            |> assembleBaseString encoder httpMethod targetUrl
+                            |> assembleBaseString encoder targetUrl httpMethod
         let secretKeys =
             match useFor with
             | ForRequestToken (consumerInfo) -> [consumerInfo.consumerSecret]
