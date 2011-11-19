@@ -172,7 +172,7 @@ module Base =
                 KeyValue ("oauth_timestamp", "1234567890");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
-        |> When assembleBaseString (urlEncode Encoding.ASCII) "http://hoge.com" POST
+        |> When assembleBaseString (require Encoding.ASCII "http://hoge.com" POST)
         |> It should equal ("POST&http%3A%2F%2Fhoge.com&"
                             + "oauth_consumer_key%3DXXXX%26oauth_nonce%3D1111%26"
                             + "oauth_signature%3DYYYY%26oauth_signature_method%3DHMACSHA1%26"
@@ -231,7 +231,7 @@ module Base =
     [<Scenario>]
     let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
         Given { consumerKey="test_consumer_key"; consumerSecret="fuga" }
-        |> When generateAuthorizationHeaderForRequestToken (OAuth.Utilities.urlEncode Encoding.ASCII) "http://hoge.com" POST
+        |> When generateAuthorizationHeaderForRequestToken (require Encoding.ASCII "http://hoge.com" POST)
         |> It should be (fun auth ->
             (System.Text.RegularExpressions.Regex.IsMatch
                 (auth, "OAuth " +

@@ -7,6 +7,8 @@ module Base =
     open OAuth.Utilities
     open OAuth.Types
 
+    let require encoding targetUrl httpMethod = Requirement (encoding, targetUrl, httpMethod)
+
     let keyValueMany tupleList = List.map KeyValue tupleList
 
     let headerParameter keyValues =
@@ -66,7 +68,9 @@ module Base =
         | GET -> "GET"
         | POST -> "POST"
 
-    let assembleBaseString encoder targetUrl httpMethod keyValues =
+    let assembleBaseString requirement keyValues =
+        let (Requirement (encoding, targetUrl, httpMethod)) = requirement
+        let encoder = urlEncode encoding
         let sanitizedUrl = targetUrl |> encoder
         let sorKeyValues = List.sortBy (fun (KeyValue (key, value)) -> key)
         let meth = getHttpMethodString httpMethod
@@ -93,7 +97,9 @@ module Base =
             ("oauth_token", accessInfo.accessToken)::
             keyValues
 
-    let generateAuthorizationHeader encoder targetUrl httpMethod useFor =
+    let generateAuthorizationHeader requirement useFor =
+        let (Requirement (encoding, _, _)) = requirement
+        let encoder = urlEncode encoding
         let keyValues = useFor
                         |> makeKeyValueTuplesForGenerateHeader
                         |> List.map (fun (key, value) -> (key, encoder value))
@@ -101,7 +107,7 @@ module Base =
                             | ForWebService (_, _, Some (key, value)) -> (key, value) :: keyValues
                             | _ -> keyValues
                             |> keyValueMany
-                            |> assembleBaseString encoder targetUrl httpMethod
+                            |> assembleBaseString requirement
         let secretKeys =
             match useFor with
             | ForRequestToken (consumerInfo) -> [consumerInfo.consumerSecret]
@@ -114,14 +120,11 @@ module Base =
             |> headerParameter
         "OAuth " + oParamsWithSignature
 
-    let generateAuthorizationHeaderForRequestToken encoder targetUrl httpMethod consumerInfo =
-        generateAuthorizationHeader encoder targetUrl httpMethod (ForRequestToken consumerInfo)
+    let generateAuthorizationHeaderForRequestToken requirement consumerInfo =
+        generateAuthorizationHeader requirement (ForRequestToken consumerInfo)
 
-    let generateAuthorizationHeaderForAccessToken encoder targetUrl httpMethod consumerInfo requestInfo pinCode =
-        generateAuthorizationHeader encoder targetUrl httpMethod (ForAccessToken (consumerInfo, requestInfo, pinCode))
+    let generateAuthorizationHeaderForAccessToken requirement consumerInfo requestInfo pinCode =
+        generateAuthorizationHeader requirement (ForAccessToken (consumerInfo, requestInfo, pinCode))
 
-    let generateAuthorizationHeaderForWebService encoder targetUrl httpMethod consumerInfo accessInfo =
-        generateAuthorizationHeader encoder targetUrl httpMethod (ForWebService (consumerInfo, accessInfo, None))
-
-    let generateAuthorizationHeaderForWebServiceWithData encoder targetUrl httpMethod consumerInfo accessInfo data =
-        generateAuthorizationHeader encoder targetUrl httpMethod (ForWebService (consumerInfo, accessInfo, Some ("status",data)))
+    let generateAuthorizationHeaderForWebService requirement consumerInfo accessInfo =
+        generateAuthorizationHeader requirement (ForWebService (consumerInfo, accessInfo, None))
