@@ -18,12 +18,12 @@ module Base =
                             key + "=\"" + value + "\"")
             |> List.fold (concatStringsWithToken ", ") ""
 
-    let parameterize encode keyValue =
+    let parameterize encoder keyValue =
         let (KeyValue (key, value)) = keyValue
-        key + "=" + (urlEncode encode value)
+        key + "=" + (encoder value)
 
-    let toParameter encode keyValues =
-        let parameterized = keyValues |> List.map (parameterize encode)
+    let toParameter encoder keyValues =
+        let parameterized = keyValues |> List.map (parameterize encoder)
         match parameterized with
         | x::y::xs ->  List.fold (concatStringsWithToken "&") "" parameterized
         | x::xs -> x + "&"
@@ -45,7 +45,7 @@ module Base =
         ((DateTime.UtcNow - DateTime (1970, 1, 1, 0, 0, 0, 0)).TotalSeconds
          |> Convert.ToInt64).ToString ()
 
-    let generateSignature encode algorithmType secretKeys (baseString : string) =
+    let generateSignature (encoder : string -> string) algorithmType secretKeys (baseString : string) =
         let keysParam = secretKeys |> concatSecretKeys |> Encoding.ASCII.GetBytes
         match algorithmType with
         | HMACSHA1 ->
@@ -54,25 +54,25 @@ module Base =
             |> Encoding.ASCII.GetBytes
             |> algorithm.ComputeHash
             |> Convert.ToBase64String
-            |> urlEncode encode
-        | PLAINTEXT -> baseString |> urlEncode encode
+            |> encoder
+        | PLAINTEXT -> baseString |> encoder
         | RSASHA1 -> raise (NotImplementedException("'RSA-SHA1' algorithm is not implemented."))
 
-    let inline generateSignatureWithHMACSHA1 encode secretKeys baseString = generateSignature encode HMACSHA1 secretKeys baseString
-    let inline generateSignatureWithPLAINTEXT encode secretKeys baseString = generateSignature encode PLAINTEXT secretKeys baseString
-    let inline generateSignatureWithRSASHA1 encode secretKeys baseString = generateSignature encode RSASHA1 secretKeys baseString
+    let inline generateSignatureWithHMACSHA1 encoder secretKeys baseString = generateSignature encoder HMACSHA1 secretKeys baseString
+    let inline generateSignatureWithPLAINTEXT encoder secretKeys baseString = generateSignature encoder PLAINTEXT secretKeys baseString
+    let inline generateSignatureWithRSASHA1 encoder secretKeys baseString = generateSignature encoder RSASHA1 secretKeys baseString
 
     let getHttpMethodString = function
         | GET -> "GET"
         | POST -> "POST"
 
-    let assembleBaseString encode meth targetUrl keyValues =
-        let sanitizedUrl = targetUrl |> urlEncode encode
+    let assembleBaseString encoder meth targetUrl keyValues =
+        let sanitizedUrl = targetUrl |> encoder
         let sorKeyValues = List.sortBy (fun (KeyValue (key, value)) -> key)
         let arrangedParams = keyValues
                             |> sorKeyValues
-                            |> toParameter encode
-                            |> urlEncode encode
+                            |> toParameter encoder
+                            |> encoder
         meth + "&" + sanitizedUrl + "&" + arrangedParams
 
     let makeKeyValueTuplesForGenerateHeader useFor =
@@ -92,35 +92,35 @@ module Base =
             ("oauth_token", accessInfo.accessToken)::
             keyValues
 
-    let generateAuthorizationHeader encode targetUrl httpMethod useFor =
+    let generateAuthorizationHeader encoder targetUrl httpMethod useFor =
         let keyValues = useFor
                         |> makeKeyValueTuplesForGenerateHeader
-                        |> List.map (fun (key, value) -> (key, urlEncode encode value))
+                        |> List.map (fun (key, value) -> (key, encoder value))
         let baseString = match useFor with
                             | ForWebService (_, _, Some (key, value)) -> (key, value) :: keyValues
                             | _ -> keyValues
                             |> keyValueMany
-                            |> assembleBaseString encode httpMethod targetUrl
+                            |> assembleBaseString encoder httpMethod targetUrl
         let secretKeys =
             match useFor with
             | ForRequestToken (consumerInfo) -> [consumerInfo.consumerSecret]
             | ForAccessToken (consumerInfo, requestInfo, pinCode) -> [consumerInfo.consumerSecret; requestInfo.requestSecret]
             | ForWebService (consumerInfo, accessInfo, _) -> [consumerInfo.consumerSecret; accessInfo.accessSecret]
-        let signature = generateSignatureWithHMACSHA1 encode secretKeys baseString
+        let signature = generateSignatureWithHMACSHA1 encoder secretKeys baseString
         let oParamsWithSignature =
             ("oauth_signature", signature) :: keyValues
             |> keyValueMany
             |> headerParameter
         "OAuth " + oParamsWithSignature
 
-    let generateAuthorizationHeaderForRequestToken encode targetUrl httpMethod consumerInfo =
-        generateAuthorizationHeader encode targetUrl httpMethod (ForRequestToken consumerInfo)
+    let generateAuthorizationHeaderForRequestToken encoder targetUrl httpMethod consumerInfo =
+        generateAuthorizationHeader encoder targetUrl httpMethod (ForRequestToken consumerInfo)
 
-    let generateAuthorizationHeaderForAccessToken encode targetUrl httpMethod consumerInfo requestInfo pinCode =
-        generateAuthorizationHeader encode targetUrl httpMethod (ForAccessToken (consumerInfo, requestInfo, pinCode))
+    let generateAuthorizationHeaderForAccessToken encoder targetUrl httpMethod consumerInfo requestInfo pinCode =
+        generateAuthorizationHeader encoder targetUrl httpMethod (ForAccessToken (consumerInfo, requestInfo, pinCode))
 
-    let generateAuthorizationHeaderForWebService encode targetUrl httpMethod consumerInfo accessInfo =
-        generateAuthorizationHeader encode targetUrl httpMethod (ForWebService (consumerInfo, accessInfo, None))
+    let generateAuthorizationHeaderForWebService encoder targetUrl httpMethod consumerInfo accessInfo =
+        generateAuthorizationHeader encoder targetUrl httpMethod (ForWebService (consumerInfo, accessInfo, None))
 
-    let generateAuthorizationHeaderForWebServiceWithData encode targetUrl httpMethod consumerInfo accessInfo data =
-        generateAuthorizationHeader encode targetUrl httpMethod (ForWebService (consumerInfo, accessInfo, Some ("status",data)))
+    let generateAuthorizationHeaderForWebServiceWithData encoder targetUrl httpMethod consumerInfo accessInfo data =
+        generateAuthorizationHeader encoder targetUrl httpMethod (ForWebService (consumerInfo, accessInfo, Some ("status",data)))
