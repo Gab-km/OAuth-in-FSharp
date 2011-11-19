@@ -1,6 +1,7 @@
 namespace OAuth
 
 module Utilities =
+    open System.Text
 
     [<CompiledName("ConcatStringsWithToken")>]
     let inline concatStringsWithToken token s1 s2 =
@@ -13,14 +14,16 @@ module Utilities =
         | _ -> ""
 
     [<CompiledName("UrlEncode")>]
-    let urlEncode (urlString : string) =
-        let urlChars = List.ofSeq urlString
-        let encodeChar c =
+    let urlEncode (encode : Encoding) (urlString : string) =
+        let urlBytes = encode.GetBytes urlString |> List.ofArray
+        let encodeChar b =
             let validChars = List.ofSeq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"
-            if List.exists (fun v -> v = c) validChars then c.ToString()
+            if b < 128uy && List.exists (fun v -> v = char b) validChars then (char b).ToString()
             else
-                let bt = System.Text.Encoding.ASCII.GetBytes (c.ToString ())
-                System.String.Format ("%{0:X2}", bt.[0])
-        urlChars
+                System.String.Format ("%{0:X2}", b)
+        urlBytes
         |> List.map encodeChar
         |> List.fold (fun s1 s2 -> s1 + s2) ""
+
+//    [<CompiledName("UrlEncodeInASCII")>]
+//    let urlEncodeInASCII urlString = urlEncode Encoding.ASCII urlString

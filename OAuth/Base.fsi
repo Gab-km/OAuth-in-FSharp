@@ -1,6 +1,7 @@
 ﻿namespace OAuth
 
 module Base = begin
+    open System.Text
     open OAuth.Utilities
     open OAuth.Types
     
@@ -17,13 +18,13 @@ module Base = begin
     /// <summary>Returns a string combined with an equal sign.</summary>
     /// <param name="keyValue">The ParameterKeyValue.</param>
     /// <returns>The key and value strings combined with an equal sign.<returns>
-    val parameterize : ParameterKeyValue -> string
+    val parameterize : Encoding -> ParameterKeyValue -> string
 
     /// <summary>Returns a parameterized string combined with an ampersand sign.</summary>
     /// <param name="keyValues">The ParameterKeyValue list.</param>
     /// <returns>The parameterized strings combined with an ampersand sign.
     /// Or the parameterized string with an ampersand with its tail.</returns>
-    val toParameter : ParameterKeyValue list -> string
+    val toParameter : Encoding -> ParameterKeyValue list -> string
 
     /// <summary>Returns a ParameterKeyValue list from a parameterized string.</summary>
     /// <param name="parameterString">The parameterized string combined with an ampersand sign.</param>
@@ -52,19 +53,19 @@ module Base = begin
     /// <param name="secretKeys">The string list of the secret keys.</param>
     /// <param name="baseString">The base string.</param>
     /// <returns>The signature which is encoded with Base64 digits and sanitized.</returns>
-    val generateSignature : HashAlgorithm -> string list -> string -> string
+    val generateSignature : Encoding -> HashAlgorithm -> string list -> string -> string
 
     /// <summary>Returns the signature with HMAC-SHA1 algorithm.</summary>
     /// <param name="secretKeys">The string list of the secret keys.</param>
     /// <param name="baseString">The base string.</param>
     /// <returns>The signature which is encoded with Base64 digits and sanitized.</returns>
-    val inline generateSignatureWithHMACSHA1 : string list -> string -> string
+    val inline generateSignatureWithHMACSHA1 : Encoding -> string list -> string -> string
 
     /// <summary>Returns the signature without any criptographies.</summary>
     /// <param name="secretKeys">The string list of the secret keys.</param>
     /// <param name="baseString">The base string.</param>
     /// <returns>The signature which is encoded with Base64 digits and sanitized.</returns>
-    val inline generateSignatureWithPLAINTEXT : string list -> string -> string
+    val inline generateSignatureWithPLAINTEXT : Encoding -> string list -> string -> string
 
     /// <summary>Returns the signature with RSA-SHA1 algorithm.</summary>
     /// <param name="secretKeys">The string list of the secret keys.</param>
@@ -72,7 +73,7 @@ module Base = begin
     /// <returns>The signature which is encoded with Base64 digits and sanitized.</returns>
     /// <remark>This function is not implemented and throws the NotImplementedException
     /// when you use this.</remark>
-    val inline generateSignatureWithRSASHA1 : string list -> string -> string
+    val inline generateSignatureWithRSASHA1 : Encoding -> string list -> string -> string
 
     /// <summary>Returns the string that represents the HTTP method.</summary>
     /// <param name="httpMethod">The Http Method.</param>
@@ -81,10 +82,10 @@ module Base = begin
 
     /// <summary>Returns the base string.</summary>
     /// <param name="meth">The string representation of the HTTP method.</param>
-    /// <param name="targetUrl">The url string.</param>
+    /// <param name="targetUrl">The URL string.</param>
     /// <param name="keyValues">The ParameterKeyValue list.</param>
     /// <returns>The base string.</returns>
-    val assembleBaseString : string -> string -> ParameterKeyValue list -> string
+    val assembleBaseString : Encoding -> string -> string -> ParameterKeyValue list -> string
 
     /// <summary>Returns the list of 2 strings tuple.</summary>
     /// <param name="useFor">The parameter of the OAuth API.</param>
@@ -92,33 +93,35 @@ module Base = begin
     val makeKeyValueTuplesForGenerateHeader : UseFor -> (string * string) list
 
     /// <summary>Returns the Authorization parameter in the HTTP header.</summary>
-    /// <param name="targetUrl">The url string.</param>
+    /// <param name="targetUrl">The URL string.</param>
     /// <param name="httpMethod">The string that represents the HTTP method.</param>
     /// <param name="useFor">The parameter of the OAuth API.</param>
     /// <returns>The Authorization parameter in the HTTP header.</returns>
-    val generateAuthorizationHeader : string -> string -> UseFor -> string
+    val generateAuthorizationHeader : Encoding -> string -> string -> UseFor -> string
 
     /// <summary>Returns the Authorization parameter in the HTTP header for the request token.</summary>
-    /// <param name="targetUrl">The url string.</param>
+    /// <param name="targetUrl">The URL string.</param>
     /// <param name="httpMethod">The string that represents the HTTP method.</param>
     /// <param name="consumerInfo">The ConsumerInfo record.</param>
     /// <returns>The Authorization parameter in the HTTP header for the request token.</returns>
-    val generateAuthorizationHeaderForRequestToken : string -> string -> ConsumerInfo -> string
+    val generateAuthorizationHeaderForRequestToken : Encoding -> string -> string -> ConsumerInfo -> string
 
     /// <summary>Returns the Authorization parameter in the HTTP header for the access token.</summary>
-    /// <param name="targetUrl">The url string.</param>
+    /// <param name="targetUrl">The URL string.</param>
     /// <param name="httpMethod">The string that represents the HTTP method.</param>
     /// <param name="consumerInfo">The ConsumerInfo record.</param>
     /// <param name="requestInfo">The RequestInfo record.</param>
     /// <param name="pinCode">The pin code.</param>
     /// <returns>The Authorization parameter in the HTTP header for the access token.</returns>
-    val generateAuthorizationHeaderForAccessToken : string -> string -> ConsumerInfo -> RequestInfo -> string -> string
+    val generateAuthorizationHeaderForAccessToken : Encoding -> string -> string -> ConsumerInfo -> RequestInfo -> string -> string
 
     /// <summary>Returns the Authorization parameter in the HTTP header for using Web APIs.</summary>
-    /// <param name="targetUrl">The url string.</param>
+    /// <param name="targetUrl">The URL string.</param>
     /// <param name="httpMethod">The string that represents the HTTP method.</param>
     /// <param name="consumerInfo">The ConsumerInfo record.</param>
     /// <param name="accessInfo">The AccessInfo record.</param>
     /// <returns>The Authorization parameter in the HTTP header for using Web APIs.</returns>
-    val generateAuthorizationHeaderForWebService : string -> string -> ConsumerInfo -> AccessInfo -> string
+    val generateAuthorizationHeaderForWebService : Encoding -> string -> string -> ConsumerInfo -> AccessInfo -> string
+
+    val generateAuthorizationHeaderForWebServiceWithData : Encoding -> string -> string -> ConsumerInfo -> AccessInfo -> string -> string
 end

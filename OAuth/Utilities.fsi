@@ -24,5 +24,8 @@ module Utilities = begin
     /// <param name="urlString">The url string.</param>
     /// <returns>The sanitized string.</returns>
     [<CompiledName("UrlEncode")>]
-    val urlEncode : urlString:string -> string
+    val urlEncode : encode:System.Text.Encoding -> urlString:string -> string
+
+//    [<CompiledName("UrlEncodeInASCII")>]
+//    val urlEncodeInASCII : urlString:string -> string
 end

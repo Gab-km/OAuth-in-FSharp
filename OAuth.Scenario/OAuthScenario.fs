@@ -3,6 +3,7 @@ module OAuthScenario
 open NaturalSpec
 
 module Utilities =
+    open System.Text
     open OAuth.Utilities
 
     [<Scenario>]
@@ -36,18 +37,26 @@ module Utilities =
     [<Scenario>]
     let ``[A-Za-z0-9\-\_\.\~]以外の文字列を16進数に変換する`` () =
         Given ["hoge"; "http://fuga.com"]
-        |> When List.map urlEncode
+        |> When List.map (urlEncode Encoding.ASCII)
         |> It should equal ["hoge"; "http%3A%2F%2Ffuga.com"]
         |> Verify
 
+    [<Scenario>]
+    let ``When multiple bytes characters are given, urlEncode should returns no encoded characters`` () =
+        Given "はろーわーるど"
+        |> When urlEncode Encoding.UTF8
+        |> It should equal "%E3%81%AF%E3%82%8D%E3%83%BC%E3%82%8F%E3%83%BC%E3%82%8B%E3%81%A9"
+        |> Verify
+
 module Base =
+    open System.Text
     open OAuth.Base
     open OAuth.Types
 
     [<Scenario>]
     let ``KeyValueをパラメータ形式の文字列に変換する`` () =
         Given (KeyValue ("oauth_nonce", "1111"))
-        |> When parameterize
+        |> When parameterize Encoding.ASCII
         |> It should equal "oauth_nonce=1111"
         |> Verify
 
@@ -67,14 +76,14 @@ module Base =
         Given [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
-        |> When toParameter
+        |> When toParameter Encoding.ASCII
         |> It should equal "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
         |> Verify
 
     [<Scenario>]
     let ``KeyValueが1つだけの場合パラメータ形式の文字列＋＆に変換する`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX")]
-        |> When toParameter
+        |> When toParameter Encoding.ASCII
         |> It should equal "oauth_consumer_key=XXXX&"
         |> Verify
 
@@ -137,14 +146,14 @@ module Base =
     [<Scenario>]
     let ``HMAC-SHA1でgenerateSignatureする`` () =
         Given (["fuga"], "hoge")
-        ||> When generateSignatureWithHMACSHA1
+        ||> When generateSignatureWithHMACSHA1 Encoding.UTF8
         |> It should equal "jMn6Vt7g5k4F4S666n%2FLeFwmJWI%3D"
         |> Verify
 
     [<Scenario>]
     let ``PLAINTEXTでgenerateSignatureする`` () =
         Given (["fuga"], "hoge")
-        ||> When generateSignatureWithPLAINTEXT
+        ||> When generateSignatureWithPLAINTEXT Encoding.ASCII
         |> It should equal "hoge"
         |> Verify
 
@@ -152,7 +161,7 @@ module Base =
     [<FailsWithType (typeof<System.NotImplementedException>)>]
     let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedExceptionが送出される`` () =
         Given (["fuga"], "hoge")
-        ||> When generateSignatureWithRSASHA1
+        ||> When generateSignatureWithRSASHA1 Encoding.ASCII
         |> Verify
 
     [<Scenario>]
@@ -162,7 +171,7 @@ module Base =
                 KeyValue ("oauth_timestamp", "1234567890");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
-        |> When assembleBaseString "POST" "http://hoge.com"
+        |> When assembleBaseString Encoding.ASCII "POST" "http://hoge.com"
         |> It should equal ("POST&http%3A%2F%2Fhoge.com&"
                             + "oauth_consumer_key%3DXXXX%26oauth_nonce%3D1111%26"
                             + "oauth_signature%3DYYYY%26oauth_signature_method%3DHMACSHA1%26"
@@ -204,7 +213,8 @@ module Base =
     [<Scenario>]
     let ``ConsumerInfo、AccessInfoでgenerateHeader用のタプルリストを作成する`` () =
         Given ForWebService ({ consumerKey="XXXX"; consumerSecret="hoge" },
-                            { accessToken="ZZZZ"; accessSecret="bar"})
+                            { accessToken="ZZZZ"; accessSecret="bar"},
+                            Some ("hoge", "fuga"))
         |> When makeKeyValueTuplesForGenerateHeader
         |> (fun ls ->
             match ls with
@@ -219,8 +229,8 @@ module Base =
 
     [<Scenario>]
     let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
-        Given ({ consumerKey="test_consumer_key"; consumerSecret="fuga" })
-        |> When generateAuthorizationHeaderForRequestToken "http://hoge.com" "POST"
+        Given { consumerKey="test_consumer_key"; consumerSecret="fuga" }
+        |> When generateAuthorizationHeaderForRequestToken Encoding.ASCII "http://hoge.com" "POST"
         |> It should be (fun auth ->
             (System.Text.RegularExpressions.Regex.IsMatch
                 (auth, "OAuth " +

@@ -12,4 +12,4 @@ type AccessInfo = { accessToken : string; accessSecret : string }
 
 type UseFor = ForRequestToken of ConsumerInfo
             | ForAccessToken of ConsumerInfo * RequestInfo * string
-            | ForWebService of ConsumerInfo * AccessInfo
+            | ForWebService of ConsumerInfo * AccessInfo * (string * string) option
