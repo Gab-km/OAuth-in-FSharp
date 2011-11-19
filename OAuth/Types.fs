@@ -14,5 +14,4 @@ type UseFor = ForRequestToken of ConsumerInfo
             | ForAccessToken of ConsumerInfo * RequestInfo * string
             | ForWebService of ConsumerInfo * AccessInfo * (string * string) option
 
-//type HttpRequirement = { encoding : System.Text.Encoding; targetUrl : string; httpMethod : HttpMethod }
 type HttpRequirement = Requirement of System.Text.Encoding * string * HttpMethod
