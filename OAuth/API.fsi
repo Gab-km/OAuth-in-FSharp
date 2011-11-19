@@ -56,9 +56,27 @@ module API = begin
     /// <returns>The access token.</returns>
     val useWebService : string -> HttpMethod -> ConsumerInfo -> AccessInfo -> string
 
+    /// <summary>Do something to the Web API by GET method and returns the result of it.</summary>
+    /// <param name="targetUrl">The URL string.</param>
+    /// <param name="consumerInfo">The ConsumerInfo record.</param>
+    /// <param name="accessInfo">The RequestInfo record.</param>
+    /// <returns>The access token.</returns>
     val useWebServiceByGet : string -> ConsumerInfo -> AccessInfo -> string
 
+    /// <summary>Do something to the Web API by POST method without any data and returns the result of it.</summary>
+    /// <param name="targetUrl">The URL string.</param>
+    /// <param name="consumerInfo">The ConsumerInfo record.</param>
+    /// <param name="accessInfo">The RequestInfo record.</param>
+    /// <returns>The access token.</returns>
     val useWebServiceByPost : string -> ConsumerInfo -> AccessInfo -> string
 
+    /// <summary>Do something to the Web API with data and returns the result of it.</summary>
+    /// <param name="targetUrl">The URL string.</param>
+    /// <param name="httpMethod">The HTTP method.</param>
+    /// <param name="consumerInfo">The ConsumerInfo record.</param>
+    /// <param name="accessInfo">The RequestInfo record.</param>
+    /// <param name="data">The string data.</param>
+    /// <returns>The access token.</returns>
+    /// <remark>The <paramref name="data" /> parameter works only the ASCII characters.</remark>
     val useWebServiceWithData : string -> HttpMethod -> ConsumerInfo -> AccessInfo -> string -> string
 end
