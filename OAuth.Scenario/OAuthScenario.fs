@@ -55,25 +55,57 @@ module Base =
     open OAuth.Types
 
     [<Scenario>]
-    let ``KeyValueをパラメータ形式の文字列に変換する`` () =
-        Given (KeyValue ("oauth_nonce", "1111"))
-        |> When parameterize (fun s -> s)
-        |> It should equal "oauth_nonce=1111"
+    let ``require function returns the HTTP requirement parameter.`` () =
+        Given (Encoding.ASCII, "http://hoge.com", GET)
+        |||> When require
+        |> It should equal (Requirement (Encoding.ASCII, "http://hoge.com", GET))
         |> Verify
 
     [<Scenario>]
-    let ``複数のKeyValueを一度に作る`` () =
+    let ``getHttpMethodString function returns the string that represents the HTTP method.`` () =
+        Given [GET; POST]
+        |> When List.map getHttpMethodString
+        |> It should equal ["GET"; "POST"]
+        |> Verify
+
+    [<Scenario>]
+    let ``toKeyValue function returns the ParameterKeyValue list from the paired string list.`` () =
         Given [("oauth_consumer_key", "XXXX");
                 ("oauth_nonce", "1111");
                 ("oauth_signature", "YYYY")]
-        |> When keyValueMany
+        |> When toKeyValue
         |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
                             KeyValue ("oauth_nonce", "1111");
                             KeyValue ("oauth_signature", "YYYY")]
         |> Verify
 
     [<Scenario>]
-    let ``KeyValueリストをパラメータ形式の文字列に変換して連結する`` () =
+    let ``fromKeyValue function returns the paired string list from the ParameterKeyValue list.`` () =
+        Given [KeyValue ("hoge", "fuga")]
+        |> When fromKeyValue
+        |> It should equal [("hoge", "fuga")]
+        |> Verify
+
+    [<Scenario>]
+    let ``headerParameter function returns the 'key="value", ...' formatted string from the ParameterKeyValue list.`` () =
+        Given [KeyValue ("oauth_consumer_key", "XXXX");
+                KeyValue ("oauth_nonce", "1111");
+                KeyValue ("oauth_signature", "YYYY")]
+        |> When headerParameter
+        |> It should equal ("oauth_consumer_key=\"XXXX\", " +
+                            "oauth_nonce=\"1111\", " +
+                            "oauth_signature=\"YYYY\"")
+        |> Verify
+
+    [<Scenario>]
+    let ``parameterize function returns the parameterized string from the ParameterKeyValue.`` () =
+        Given (KeyValue ("oauth_nonce", "1111"))
+        |> When parameterize (fun s -> s)
+        |> It should equal "oauth_nonce=1111"
+        |> Verify
+
+    [<Scenario>]
+    let ``toParameter function returns the 'key=value&...' formatted string from the multi-valued ParameterKeyValue list.`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
                 KeyValue ("oauth_signature", "YYYY")]
@@ -82,25 +114,14 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``KeyValueが1つだけの場合パラメータ形式の文字列＋＆に変換する`` () =
+    let ``toParameter function returns the 'key=value&...' formatted string from the single-valued ParameterKeyValue list.`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX")]
         |> When toParameter (fun s -> s)
         |> It should equal "oauth_consumer_key=XXXX&"
         |> Verify
 
     [<Scenario>]
-    let ``KeyValueリストを'key="value", ...'の形式に変換する`` () =
-        Given [KeyValue ("oauth_consumer_key", "XXXX");
-                KeyValue ("oauth_nonce", "1111");
-                KeyValue ("oauth_signature", "YYYY")]
-        |> headerParameter
-        |> It should equal ("oauth_consumer_key=\"XXXX\", " +
-                            "oauth_nonce=\"1111\", " +
-                            "oauth_signature=\"YYYY\"")
-        |> Verify
-
-    [<Scenario>]
-    let ``パラメータ形式の文字列をKeyValueリストに変換する`` () =
+    let ``fromParameter function returns the ParameterKeyValue list from the 'key=value&...' formatted string.`` () =
         Given "oauth_consumer_key=XXXX&oauth_nonce=1111&oauth_signature=YYYY"
         |> When fromParameter
         |> It should equal [KeyValue ("oauth_consumer_key", "XXXX");
@@ -109,7 +130,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``KeyValueリストから指定したKeyを持つ要素を見つけるとSome Valueを返す`` () =
+    let ``tryGetValue function returns the Some value from the ParameterKeyValue list when the key matches.`` () =
         Given ("oauth_nonce",
                 [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
@@ -119,7 +140,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``KeyValueリストから指定したKeyを持つ要素を見つけられないとNoneを返す`` () =
+    let ``tryGetValue function returns None from the ParameterKeyValue list when the key doesn't match.`` () =
         Given ("oauth_hoge",
                 [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_nonce", "1111");
@@ -129,7 +150,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``generateNonceしてみる`` () =
+    let ``generateNonce function returns the ticks string of DateTime.Now .`` () =
         Given ()
         |> When generateNonce
         |> It should be (fun nonce ->
@@ -137,7 +158,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``generateTimeStampしてみる`` () =
+    let ``generateTimeStamp function returns the time stamp string.`` () =
         Given ()
         |> When generateTimeStamp
         |> calculating (fun s -> s.Length)
@@ -145,14 +166,14 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``HMAC-SHA1でgenerateSignatureする`` () =
+    let ``generateSignatureWithHMACSHA1 function returns the signature string with HMAC-SHA1 algorithm.`` () =
         Given (["fuga"], "hoge")
         ||> When generateSignatureWithHMACSHA1 (urlEncode Encoding.UTF8)
         |> It should equal "jMn6Vt7g5k4F4S666n%2FLeFwmJWI%3D"
         |> Verify
 
     [<Scenario>]
-    let ``PLAINTEXTでgenerateSignatureする`` () =
+    let ``generateSignatureWithPLAINTEXT function returns the signature string without any algorithms.`` () =
         Given (["fuga"], "hoge")
         ||> When generateSignatureWithPLAINTEXT (fun s -> s)
         |> It should equal "hoge"
@@ -160,13 +181,13 @@ module Base =
 
     [<Scenario>]
     [<FailsWithType (typeof<System.NotImplementedException>)>]
-    let ``RSA-SHA1でgenerateSignatureしようとするとNotImplementedExceptionが送出される`` () =
+    let ``generateSignatureWithRSASHA1 function raises the NotImplementedException.`` () =
         Given (["fuga"], "hoge")
         ||> When generateSignatureWithRSASHA1 (fun s -> s)
         |> Verify
 
     [<Scenario>]
-    let ``与えられたクエリパラメータを使ってベース文字列を作成するする`` () =
+    let ``assembleBaseString function returns the base string from the ParameterKeyValue list.`` () =
         Given [KeyValue ("oauth_consumer_key", "XXXX");
                 KeyValue ("oauth_signature_method", "HMACSHA1");
                 KeyValue ("oauth_timestamp", "1234567890");
@@ -180,7 +201,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``ConsumerInfoのみでgenerateHeader用のタプルリストを作成する`` () =
+    let ``makeKeyValueTuplesForGenerateHeader function returns the paired string list from the ForRequestToken value.`` () =
         Given ForRequestToken { consumerKey="XXXX"; consumerSecret="hoge" }
         |> When makeKeyValueTuplesForGenerateHeader
         |> (fun ls ->
@@ -194,7 +215,7 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``ConsumerInfo、RequestInfo、pinCodeでgenerateHeader用のタプルリストを作成する`` () =
+    let ``makeKeyValueTuplesForGenerateHeader function returns the paired string list from the ForAccessToken value.`` () =
         Given ForAccessToken ({ consumerKey="XXXX"; consumerSecret="hoge" },
                             { requestToken="YYYY"; requestSecret="fuga"},
                             "123456")
@@ -212,10 +233,10 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``ConsumerInfo、AccessInfoでgenerateHeader用のタプルリストを作成する`` () =
+    let ``makeKeyValueTuplesForGenerateHeader function returns the paired string list from the ForWebService value.`` () =
         Given ForWebService ({ consumerKey="XXXX"; consumerSecret="hoge" },
                             { accessToken="ZZZZ"; accessSecret="bar"},
-                            Some ("hoge", "fuga"))
+                            [KeyValue ("hoge", "fuga")])
         |> When makeKeyValueTuplesForGenerateHeader
         |> (fun ls ->
             match ls with
@@ -229,14 +250,50 @@ module Base =
         |> Verify
 
     [<Scenario>]
-    let ``リクエストトークンを要求するHTTPのAuthorizationヘッダを構成する`` () =
-        Given { consumerKey="test_consumer_key"; consumerSecret="fuga" }
-        |> When generateAuthorizationHeaderForRequestToken (require Encoding.ASCII "http://hoge.com" POST)
+    let ``generateAuthorizationHeaderForRequestToken function returns the Authorization parameter string.`` () =
+        Given ((require Encoding.ASCII "http://hoge.com" POST),
+                { consumerKey="test_consumer_key"; consumerSecret="fuga" })
+        ||> When generateAuthorizationHeaderForRequestToken
         |> It should be (fun auth ->
             (System.Text.RegularExpressions.Regex.IsMatch
                 (auth, "OAuth " +
                         "oauth_signature=\"[A-Za-z0-9\+\-%]+%3D\", " +
                         "oauth_consumer_key=\"test_consumer_key\", " +
+                        "oauth_nonce=\"\d{18}\", " +
+                        "oauth_signature_method=\"HMAC-SHA1\", " +
+                        "oauth_timestamp=\"\d{10}\"")))
+        |> Verify
+
+    [<Scenario>]
+    let ``generateAuthorizationHeaderForAccessToken function returns the Authorization parameter string.`` () =
+        Given ({ consumerKey="test_consumer_key"; consumerSecret="fuga" },
+                { requestToken="test_request_token"; requestSecret="bar"},
+                "123456")
+        |||> When generateAuthorizationHeaderForAccessToken (require Encoding.ASCII "http://hoge.com" POST)
+        |> It should be (fun auth ->
+            (System.Text.RegularExpressions.Regex.IsMatch
+                (auth, "OAuth " +
+                        "oauth_signature=\"[A-Za-z0-9\+\-%]+%3D\", " +
+                        "oauth_consumer_key=\"test_consumer_key\", " +
+                        "oauth_token=\"test_request_token\", " +
+                        "oauth_verifier=\"123456\", " +
+                        "oauth_nonce=\"\d{18}\", " +
+                        "oauth_signature_method=\"HMAC-SHA1\", " +
+                        "oauth_timestamp=\"\d{10}\"")))
+        |> Verify
+
+    [<Scenario>]
+    let ``generateAuthorizationHeaderForWebService function returns the Authorization parameter string.`` () =
+        Given ({ consumerKey="test_consumer_key"; consumerSecret="fuga" },
+                { accessToken="test_access_token"; accessSecret="blur"},
+                [KeyValue ("spam", "eggs")])
+        |||> When generateAuthorizationHeaderForWebService (require Encoding.ASCII "http://hoge.com" POST)
+        |> It should be (fun auth ->
+            (System.Text.RegularExpressions.Regex.IsMatch
+                (auth, "OAuth " +
+                        "oauth_signature=\"[A-Za-z0-9\+\-%]+%3D\", " +
+                        "oauth_consumer_key=\"test_consumer_key\", " +
+                        "oauth_token=\"test_access_token\", " +
                         "oauth_nonce=\"\d{18}\", " +
                         "oauth_signature_method=\"HMAC-SHA1\", " +
                         "oauth_timestamp=\"\d{10}\"")))

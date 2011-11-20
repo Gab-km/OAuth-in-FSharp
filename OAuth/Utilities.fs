@@ -24,6 +24,3 @@ module Utilities =
         urlBytes
         |> List.map encodeChar
         |> List.fold (fun s1 s2 -> s1 + s2) ""
-
-//    [<CompiledName("UrlEncodeInASCII")>]
-//    let urlEncodeInASCII urlString = urlEncode Encoding.ASCII urlString
