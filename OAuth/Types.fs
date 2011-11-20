@@ -12,6 +12,6 @@ type AccessInfo = { accessToken : string; accessSecret : string }
 
 type UseFor = ForRequestToken of ConsumerInfo
             | ForAccessToken of ConsumerInfo * RequestInfo * string
-            | ForWebService of ConsumerInfo * AccessInfo * (string * string) option
+            | ForWebService of ConsumerInfo * AccessInfo * ParameterKeyValue list
 
 type HttpRequirement = Requirement of System.Text.Encoding * string * HttpMethod

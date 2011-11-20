@@ -36,7 +36,7 @@ type AccessInfo =
 type UseFor =
     | ForRequestToken of ConsumerInfo
     | ForAccessToken of ConsumerInfo * RequestInfo * string
-    | ForWebService of ConsumerInfo * AccessInfo * (string * string) option
+    | ForWebService of ConsumerInfo * AccessInfo * ParameterKeyValue list
 
 /// <summary>A pack of parameter for HTTP actions.</summary>
 type HttpRequirement = | Requirement of System.Text.Encoding * string * HttpMethod
