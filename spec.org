@@ -1,2 +1,0 @@
-参考：The OAuth 1.0 Protocol http://tools.ietf.org/html/rfc5849
-* readmeJP.rstを日本語で書く
