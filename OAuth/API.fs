@@ -9,6 +9,7 @@ module API =
     open OAuth.Core.Authentication
     open OAuth.ExtendedWebClient
 
+    [<CompiledName("AsyncAPIBase")>]
     let asyncAPIBase requirement header parameter =
         async {
             let (Requirement (encoding, targetUrl, httpMethod)) = requirement
@@ -33,14 +34,17 @@ module API =
             return result
         } |> Async.RunSynchronously
 
+    [<CompiledName("GetRequestToken")>]
     let getRequestToken requirement consumerInfo parameter =
         let header = generateAuthorizationHeaderForRequestToken requirement consumerInfo
         asyncAPIBase requirement header parameter
 
+    [<CompiledName("GetAccessToken")>]
     let getAccessToken requirement consumerInfo requestInfo pinCode parameter =
         let header = generateAuthorizationHeaderForAccessToken requirement consumerInfo requestInfo pinCode
         asyncAPIBase requirement header parameter
 
+    [<CompiledName("UseWebService")>]
     let useWebService requirement consumerInfo accessInfo parameter =
         let header = generateAuthorizationHeaderForWebService requirement consumerInfo accessInfo parameter
         asyncAPIBase requirement header parameter
