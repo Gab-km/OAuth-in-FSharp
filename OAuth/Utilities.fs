@@ -1,7 +1,6 @@
 namespace OAuth
 
 module Utilities =
-    open System.Text
 
     [<CompiledName("ConcatStringsWithToken")>]
     let inline concatStringsWithToken token s1 s2 =
@@ -14,7 +13,7 @@ module Utilities =
         | _ -> ""
 
     [<CompiledName("UrlEncode")>]
-    let urlEncode (encode : Encoding) (urlString : string) =
+    let urlEncode (encode : System.Text.Encoding) (urlString : string) =
         let urlBytes = encode.GetBytes urlString |> List.ofArray
         let encodeChar b =
             let validChars = List.ofSeq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"

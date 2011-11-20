@@ -8,7 +8,7 @@ module Utilities = begin
     /// <param name="s2">The second string.</param>
     /// <returns>The concatenated string.</returns>
     [<CompiledName("ConcatStringsWithToken")>]
-    val inline concatStringsWithToken : token:string -> s1:string -> s2:string -> string
+    val inline concatStringsWithToken : string -> string -> string -> string
 
     /// <summary>Returns a concatenated strings with '&amp;' when a list contains more than one string.<br />
     /// Returns a string with '&amp;' at its tail when a list contains the string alone.<br />
@@ -16,7 +16,7 @@ module Utilities = begin
     /// <param name="secretKeys">The string list contains secret keys.</param>
     /// <returns>The concatenated string.</returns>
     [<CompiledName("ConcatSecretKeys")>]
-    val concatSecretKeys : secretKeys:string list -> string
+    val concatSecretKeys : string list -> string
 
     /// <summary>Returns an sanitized string.<br />
     /// Be sanitized a character in the string when the character isn't
@@ -24,8 +24,5 @@ module Utilities = begin
     /// <param name="urlString">The url string.</param>
     /// <returns>The sanitized string.</returns>
     [<CompiledName("UrlEncode")>]
-    val urlEncode : encode:System.Text.Encoding -> urlString:string -> string
-
-//    [<CompiledName("UrlEncodeInASCII")>]
-//    val urlEncodeInASCII : urlString:string -> string
+    val urlEncode : System.Text.Encoding -> string -> string
 end
