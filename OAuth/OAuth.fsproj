@@ -47,6 +47,8 @@
     <Compile Include="Types.fs" />
     <Compile Include="Base.fsi" />
     <Compile Include="Base.fs" />
+    <Compile Include="Authentication.fsi" />
+    <Compile Include="Authentication.fs" />
     <Compile Include="API.fsi" />
     <Compile Include="API.fs" />
     <None Include="Script.fsx" />
