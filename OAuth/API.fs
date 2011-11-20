@@ -8,6 +8,7 @@ module API =
     open OAuth.Core.Base
     open OAuth.Core.Authentication
     open OAuth.ExtendedWebClient
+    open Microsoft.FSharp.Control
 
     [<CompiledName("AsyncAPIBase")>]
     let asyncAPIBase requirement header parameter =
