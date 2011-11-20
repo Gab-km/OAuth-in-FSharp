@@ -9,7 +9,9 @@ module Base =
 
     let require encoding targetUrl httpMethod = Requirement (encoding, targetUrl, httpMethod)
 
-    let keyValueMany tupleList = List.map KeyValue tupleList
+    let toKeyValue tupleList = List.map KeyValue tupleList
+
+    let fromKeyValue keyValues = List.map (fun (KeyValue (key, value)) -> (key, value)) keyValues
 
     let headerParameter keyValues =
         match keyValues with
@@ -100,13 +102,13 @@ module Base =
     let generateAuthorizationHeader requirement useFor =
         let (Requirement (encoding, _, _)) = requirement
         let encoder = urlEncode encoding
-        let keyValues = useFor
+        let keyValuePair = useFor
                         |> makeKeyValueTuplesForGenerateHeader
                         |> List.map (fun (key, value) -> (key, encoder value))
         let baseString = match useFor with
-                            | ForWebService (_, _, Some (key, value)) -> (key, value) :: keyValues
-                            | _ -> keyValues
-                            |> keyValueMany
+                            | ForWebService (_, _, kvs) -> kvs
+                            | _ -> []
+                            |> List.append (toKeyValue keyValuePair)
                             |> assembleBaseString requirement
         let secretKeys =
             match useFor with
@@ -115,8 +117,8 @@ module Base =
             | ForWebService (consumerInfo, accessInfo, _) -> [consumerInfo.consumerSecret; accessInfo.accessSecret]
         let signature = generateSignatureWithHMACSHA1 encoder secretKeys baseString
         let oParamsWithSignature =
-            ("oauth_signature", signature) :: keyValues
-            |> keyValueMany
+            ("oauth_signature", signature) :: keyValuePair
+            |> toKeyValue
             |> headerParameter
         "OAuth " + oParamsWithSignature
 
@@ -126,5 +128,5 @@ module Base =
     let generateAuthorizationHeaderForAccessToken requirement consumerInfo requestInfo pinCode =
         generateAuthorizationHeader requirement (ForAccessToken (consumerInfo, requestInfo, pinCode))
 
-    let generateAuthorizationHeaderForWebService requirement consumerInfo accessInfo =
-        generateAuthorizationHeader requirement (ForWebService (consumerInfo, accessInfo, None))
+    let generateAuthorizationHeaderForWebService requirement consumerInfo accessInfo param =
+        generateAuthorizationHeader requirement (ForWebService (consumerInfo, accessInfo, param))
