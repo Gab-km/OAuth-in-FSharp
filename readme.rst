@@ -4,8 +4,7 @@ OAuth
 
 1 Introduction
 --------------
-OAuth is one of the open protocols to allow API authentication.
-It has simple and standard methods from desktop and web applications.
+OAuth is one of the open protocols to allow API authentication in a simple and standard methods from desktop and web applications.
 
 2 Usage
 -------
