@@ -29,6 +29,9 @@ OAuth.API
 
 3 Examples
 ----------
+
+::
+
  (*
  This sample is to get the access token and the access secret via Twitter API.
  Given parameters - the consumer key and the consumer secret - are just fake.
